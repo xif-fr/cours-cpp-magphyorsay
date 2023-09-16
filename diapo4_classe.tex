@@ -1,0 +1,340 @@
+\documentclass[c]{beamer}
+                \usepackage{org-preamble}
+                \usepackage[cpp_teaching]{slide-style}
+                \usepackage{minted}
+\usetheme{default}
+
+\title{Programation orientée objet - Classes en C++}
+
+\begin{document}
+
+\maketitle
+
+%------------------------------------------------------------------
+
+\begin{frame}[fragile]{Plein de tableaux...}
+
+\begin{minted}[fontsize=\small]{c++}
+  vector<string> prénoms_étudiants = {"A", "B", "C"};
+  vector<string> noms_étudiants = {"D", "E", "F", "G"};
+  vector<date> datesnaissance_étudiants = {date(2022,10,4), ...};
+  vector<float> notes_étudiants (4);
+  notes_étudiants[2] = 19;
+\end{minted}
+
+\end{frame}
+
+\begin{frame}[fragile]{Qu'a-t-on envie de faire ?}
+
+\pause
+$\rightarrow$ Regrouper dans une "boite" / structure
+\begin{minted}[fontsize=\small]{c++}
+struct Étudiant {
+  string prénom;
+  string nom;
+  date date_naissance;
+  float note;
+};
+
+vector<Étudiant> étudiants = {
+  { "A", "D", date(2022,10,4), 0 },
+  ...
+};
+étudiants[2].note = 19;
+\end{minted}
+
+\end{frame}
+
+%------------------------------------------------------------------
+
+\begin{frame}[fragile]{Un code infernal}
+
+  \begin{columns}[t]
+    \hspace{-0.8cm} 
+    \begin{column}{0.6\textwidth}
+      \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// appareil A
+canal_comm_a = 192.168.1.5:3000
+login(canal_comm_a, "utilisateur", "mdp")
+calibration_a = 0.74 // W/A
+dernière_commande = 0
+
+// appareils B
+port_usb = "/dev/usb5"
+p = open(port_usb, 115200)
+voltage = +inf
+// ... deux autres appareils comme B ...
+
+wait(5 sec) // attendre que A démarre
+envoyer(canal_comm_a, "initialize, 42")
+wait(1 sec)
+        \end{minted}
+    \end{column}
+    \hspace{-0.6cm} 
+    \begin{column}{0.6\textwidth}
+      \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+while (voltage > 0) {
+  
+  char buffer[100]
+  voltage = atof( read(p, buffer, 100) )
+  if (voltage > 16) afficher erreur "..."
+  r = write(p, "reset")
+  if (r < 0) afficher erreur "..."
+  // ... deux autres appareils comme B ...
+
+  puissance = ...  // faire des calculs
+
+  I = puissance*calibration_a
+  envoyer(canal_comm_a, "setcurr {I:.4e} 0")
+  dernière_commande = I
+  envoyer(canal_comm_a, "bidule")
+  envoyer(canal_comm_a, "chose")
+  état = envoyer(canal_comm_a, "currstate")
+  if (état > 4 or état < 0)
+    afficher erreur "..."
+}
+        \end{minted}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+%------------------
+
+\begin{frame}[fragile]{Qu'a-t-on envie de faire ?}
+
+Fonction du programme noyée dans les détails techniques, redondance...
+
+\end{frame}
+
+\begin{frame}[fragile]{Qu'a-t-on envie de faire ?}
+
+\pause
+Cacher, "emballer" :
+\begin{itemize}[<+->]
+  \item les routines spécifiques à chaque appareil $\rightarrow$ faire des \emph{fonctions} pour dédupliquer \& regrouper 
+  \item les cannaux de communcations, calibrations, états... $\rightarrow$ dans une boite / \emph{structure}
+  \item combiner ces deux idées en une \emph{\textbf{interface}} claire et simple
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Idéalement}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// appareil A
+appareil_a = AppareilTypeA(192.168.1.5, "utilisateur", "mdp", 0.74 /*W/A*/)
+
+// appareils B
+appareil_b1 = AppareilTypeB("/dev/usb5")
+appareil_b2 = AppareilTypeB("/dev/usb7")
+appareil_b3 = AppareilTypeB("/dev/usb8")
+
+appareil_a.wait_and_initialize()
+
+while (appareil_b1.last_voltage > 0) {
+  
+  v1 = appareil_b1.read_voltage()
+  v2 = appareil_b2.read_voltage()
+  v3 = appareil_b3.read_voltage()
+
+  puissance = ...  // faire des calculs
+
+  appareil_a.set_power(puissance)
+  if (appareil_a.état > 4 or appareil_a.état < 0)
+    afficher erreur "..."
+}
+\end{minted}
+\end{frame}
+
+%------------------------------------------------------------------
+
+\begin{frame}[fragile]{Notion de classe}
+ \begin{itemize}[<+->]
+\item Programmation orientée objet : analyse du problème en termes \structure{\emph{de nature et de structure des
+données}}, et des \structure{\emph{actions}} sur ces structures
+
+\item \(\neq\) programmation impérative (pensée en terme de procédure, d'instructions)
+
+\item Une classe est
+
+\begin{enumerate}
+\item \structure{une généralisation de la notion de type (\texttt{int}, \texttt{double},\ldots{})}
+
+\item \structure{une association de \textit{\textcolor{magenta}{données membres}}
+  ($\equiv$ \textit{\textcolor{magenta}{données}} $\equiv$ \textit{\textcolor{magenta}{membres}} $\equiv$ \textit{\textcolor{magenta}{attributs}} ) et d'opérations
+  s'y rapportant, les \textit{\textcolor{magenta}{méthodes}} ($\equiv$ \textit{\textcolor{magenta}{fonctions membres}})}
+\end{enumerate}
+
+\item Mais la POO, c'est bien plus que ça...
+\end{itemize}
+\end{frame}
+
+%------------------------------------------------------------------
+
+\begin{frame}[fragile]{Déclaration de classe}
+ \begin{itemize}
+\item Classe \structure{\(\rightarrow\) généralisation de la notion de type}
+\begin{cbox}[][lwuc](\texttt{particule.h})
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+
+class particule
+{
+  public:  // visibilité des membres (cf. cours encapsulation)
+
+  // Déclaration de données membres
+  double masse; // kg
+  double charge; // C
+  vec3 impulsion; // kg·m/s
+};
+\end{minted}
+\end{cbox}
+\end{itemize}
+
+\pause
+
+\begin{cbox}[][][\centering]
+\ding{42} Ne pas oublier le point virgule à la fin de la déclaration
+\end{cbox}
+\end{frame}
+
+%--------------------------------------------------------------
+
+\begin{frame}[fragile]{Déclaration de classe}
+ \begin{itemize}
+\item Classe \structure{\(\rightarrow\) association de données membres et de méthodes (fonctions
+membres)}
+\begin{cbox}[][lwuc](\texttt{particule.h})
+  \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class particule
+{
+  public:
+
+  // Déclaration de données membres
+  double masse; // kg
+  double charge; // C
+  vec3 impulsion; // kg·m/s
+
+  // Déclaration des méthodes
+  void initialise(double masse_MeV, double charge_u, vec3 impulsion_SI);
+  void afficher();
+  double masse_en_MeV();
+  double énergie_en_MeV();
+};
+\end{minted}
+\end{cbox}
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------
+
+\begin{frame}[fragile]{Déclaration de classe}
+ \begin{itemize}
+\item Classe \structure{\(\rightarrow\) association de données membres et de méthodes}
+\begin{cbox}[][lwuc](\texttt{particule.h})
+  \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#ifndef PARTICULE_H
+#define PARTICULE_H    
+class particule
+{
+  public:
+
+  // Déclaration de données membres
+  double masse; // kg
+  double charge; // C
+  vec3 impulsion; // kg·m/s
+
+  // Déclaration des méthodes
+  void initialise(double masse_MeV, int charge_u, vec3 impulsion_SI);
+  void afficher();
+  double masse_en_MeV();
+  double énergie_en_MeV();
+};
+#endif
+\end{minted}
+\end{cbox}
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------
+ 
+\begin{frame}[fragile,label={sec:orgheadline5}]{Définition de méthodes de classes}
+ \begin{itemize}
+\item Identique à la définition d'une fonction mais préfixée du nom de la classe et
+de l'opérateur de portée \texttt{::}
+\begin{cbox}[][lwuc](\texttt{particule.cpp})
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=-1.5cm]{c++}
+#include <iostream>
+#include "particule.h"
+
+void particule::initialise(double masse_MeV, int charge_u, vec3 impulsion_SI) {
+  masse = masse_MeV * J_per_MeV / (c*c);
+  charge = charge_u * unit_charge;
+  impulsion = impulsion_SI;
+}
+
+void particule::afficher() {
+  std::cout << "m=" << masse_en_MeV() << " MeV/c², q=" << charge/unit_charge << ...
+}
+
+double particule::énergie_en_MeV() { // E² = m²c⁴ + p²c²
+  c2 = c * c;
+  return sqrt( pow(masse*c2, 2) + impulsion.norme_carrée()*c2 ) / J_per_MeV;
+}
+\end{minted}
+\end{cbox}
+\end{itemize}
+\end{frame}
+
+%----------------------------------------------------------------------------
+
+\begin{frame}[fragile,label={sec:orgheadline6}]{Exemple d'utilisation de la classe \texttt{particule}}
+\begin{cbox}[][lwuc](\texttt{test\_particule.cpp})
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include<iostream>
+using namespace std;
+#include "particule.h"
+
+int main()
+{
+  // Instanciation d'objets de type particule
+  particule my_electron, my_proton;
+  my_electron.initialise(0.511, -1, {2e-23,-4e-23,0});
+  my_proton.initialise(938.0, +1, {0,0,0});
+
+  cout << "my_electron :" << endl;
+  my_electron.afficher();
+  double E = my_electron.énergie_en_MeV();
+  cout << "énergie en MeV = " << E << endl;
+}
+\end{minted}
+\end{cbox}
+\end{frame}
+
+%---------------------------------------------------------
+
+\begin{frame}[fragile,label={sec:orgheadline7}]{Exemple d'utilisation de la classe \texttt{particule} : pointeurs}
+  \begin{cbox}[][lwuc](\texttt{test\_particule.cpp})
+ \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include<iostream>
+using namespace std;
+#include "particule.h"
+
+int main()
+{
+  // Instanciation d'objets de type particule
+  particule* ptr_electron = new particule;
+  ptr_electron->initialise(0.511, -1, {2e-23,-4e-23,0});
+
+  cout << "my_electron :" << endl;
+  my_electron->afficher();
+  double E = my_electron->énergie_en_MeV();
+  cout << "énergie en MeV = " << E << endl;
+ 
+  delete ptr_electron;
+}
+ \end{minted}
+ \end{cbox}
+\end{frame}
+
+
+\end{document}

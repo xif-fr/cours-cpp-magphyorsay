@@ -1,0 +1,95 @@
+\documentclass[c]{beamer}
+                \usepackage{org-preamble}
+                \usepackage[cpp_teaching]{slide-style}
+                \usepackage{minted}
+\usetheme{default}
+
+\title{Conception d'un programme}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}[label={sec:orgheadline1}]{Conception d'un programme}
+De manière générale en POO, le développeur procède de la façon suivante:
+
+\begin{enumerate}
+\item \structure{Répertorier} les objets nécessaires à la description du problème,
+
+\item \structure{Réfléchir} aux liens logiques entre ces objets (composition, amitié,
+héritage),
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile,label={sec:orgheadline2}]{Héritage vs. Composition}
+ Il faut bien distinguer les deux liens logiques que sont l'héritage et la
+composition:
+
+\begin{description}
+\item[{Composition}] relation de type \structure{\textbf{possède un}}; la classe \texttt{polygone} possède
+un ensemble de \texttt{point}
+\item[{Héritage}] relation de type \structure{\textbf{est un}}; la classe \texttt{rectangle} est un
+\texttt{polygone}
+\end{description}
+\end{frame}
+
+\begin{frame}[fragile,label={sec:orgheadline3}]{Héritage}
+ l'héritage est une notion relativement puissante en POO, mais il 
+ éviter les relations hiérarchiques inappropriées, et les dérivations qui, in fine,
+ s'avèrent inutiles et alourdissent le code.
+
+\vspace{+0.5cm}
+
+\structure{classe abstraite, classe concrète ?}
+Dans un contexte donné, un objet de type \texttt{mammifere} va representer un concept, quand un \texttt{chat} ou un \texttt{chien} va représenter un objet concret. 
+
+\vspace{+0.5cm}
+
+\structure{Est-il utile d'implémenter une classe \texttt{etre\_vivant}, une classe dérivée \texttt{animal}, une classe \texttt{mammifere} dérivée de \texttt{animal}, les classes \texttt{chat} et \texttt{chien} dérivée de \texttt{mammifere}, des classes \texttt{doberman}, \texttt{chihuahua}, etc qui dérivent de la classe chien ? Quelles classes doivent être abstraites/concrètes ?}
+
+
+\vspace{0.25cm}
+
+Une phase de réflexion sur le contexte et la finalité du projet est nécessaire pour déterminer la pertinence des objets à implémenter et de leur dérivation.
+\end{frame}
+
+\begin{frame}[label={sec:orgheadline4}]{Conception d'un programme}
+De manière générale en POO, le développeur procède de la façon suivante:
+
+\begin{enumerate}
+\item \structure{Répertorier} les objets nécessaires à la description du problème,
+
+\item \structure{Réfléchir} aux liens logiques entre ces objets (composition, amitié,
+héritage),
+
+\item \structure{Implémenter} ces objets \emph{i.e.} déclarer les méthodes puis les définir,
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[label={sec:orgheadline5}]{Conception d'un programme}
+De manière générale en POO, le développeur procède de la façon suivante:
+
+\begin{enumerate}
+\item \structure{Répertorier} les objets nécessaires à la description du problème,
+
+\item \structure{Réfléchir} aux liens logiques entre ces objets (composition, amitié,
+héritage),
+
+\item \structure{Implémenter} ces objets \emph{i.e.} déclarer les méthodes puis les définir,
+
+\item \structure{Créer} des instance-tests de ces objets et \structure{utiliser} leurs méthodes pour
+répondre au problème posé.
+\end{enumerate}
+\end{frame}
+\begin{frame}[label={sec:orgheadline6}]{Conception d'un programme}
+\begin{center}
+\begin{tabular}{ll}
+ & Fraction du temps\\
+\hline
+\structure{1. Répertorier / 2. Réfléchir} & 40\%\\
+\structure{3. Implémenter} & 10\%\\
+\structure{4. Tester \& utiliser/déboguer} & 50\%\\
+\end{tabular}
+\end{center}
+\end{frame}
+\end{document}

@@ -1,0 +1,877 @@
+\documentclass[c]{beamer}
+\usepackage{org-preamble}
+\usepackage[cpp_teaching]{slide-style}
+\usepackage{minted}
+\newcommand{\inline}[1]{\mintinline[breaklines]{c++}{#1}}
+\usepackage{xcolor}
+\usepackage{newunicodechar}
+\newcommand\Warning{%
+ \makebox[1.4em][c]{%
+ \makebox[0pt][c]{\raisebox{.1em}{\small!}}%
+ \makebox[0pt][c]{\color{red}\Large$\bigtriangleup$}}}%
+\newunicodechar{⚠}{\Warning}
+\usetheme{default}
+\title{Quelques spécificités du C++ (hors POO)}
+
+\begin{document}
+
+\maketitle
+\def\theFancyVerbLine{%
+  \color{white}\sffamily\tiny\arabic{FancyVerbLine}%
+        {\tikz[remember picture,overlay]\node(minted-\arabic{FancyVerbLine}){};}%
+}
+\tikzset{codeblock/.style={color=#1!50,rounded corners=0.5ex, opacity=0.2, fill}}
+
+%--------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Spécifités notables du C++}
+  \begin{itemize}  
+  \item Bibliothèque standard
+  \item Déclaration des variables (emplacement libre)
+  \item Arguments par défaut de fonction
+  \item Surdéfinition de fonction
+  \item Type \textit{bool}
+  \item Espace de noms
+  \item Références
+  \item Allocation dynamique de mémoire : opérateur \textit{new} et \textit{delete}
+  \item Exceptions
+  \end{itemize}
+\end{frame}
+
+%------------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Bibliothèque standard}
+\begin{itemize}
+\item Les bibliothèques du C ont été adaptées aux besoins du \Cpp :
+\end{itemize}
+
+\begin{columns}
+\begin{column}{0.3\columnwidth}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Inclusion en C
+#include <math.h>
+#include <time.h>
+\end{minted}
+\end{column}
+
+\begin{column}{0.4\columnwidth}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Inclusion en C++
+#include <cmath>
+#include <ctime>
+\end{minted}
+\end{column}
+\end{columns}
+
+\vspace{3em}
+De nombreuses autres spécifiques au \Cpp existent (\textit{cf.} diapos 3), l'ensemble formant la bibliothèque standard du \Cpp (\textit{standard library}, ou \textit{std}).
+
+\end{frame}
+
+\begin{frame}[fragile]{Déclaration de variables}
+
+\begin{itemize}
+\item Possibilité de déclarer les variables locales quel que soit l'endroit
+\end{itemize}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+for (int i = 0 ; i < 10 ; i++) {
+  double x = 1./i;
+}
+\end{minted}
+
+\begin{cbox}[][][\centering]
+⚠ \ La variable \texttt{x} n'existe plus en dehors de la boucle
+\end{cbox}
+
+\end{frame}
+
+%--------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Arguments par défaut de fonctions}
+ \Cpp autorise l'utilisation de valeurs par défaut dans \structure{les prototypes de
+  fonction}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Prototype de fonction
+void initialize(const double abs, const double ord = 3.4);
+
+int main() {
+  initialize(1.0);
+}
+
+void initialize(const double abs, const double ord)
+{ ... }
+\end{minted}
+
+\begin{itemize}
+\item En l'absence de second argument, le compilateur assigne la valeur 3.4 à la
+variable \texttt{ord}
+
+\item Les arguments concernés doivent \structure{obligatoirement} être les \structure{derniers} dans la
+liste.
+\end{itemize}
+\end{frame}
+
+%-----------------------------------------------------------------
+
+\begin{frame}[fragile]{Surdéfinition (surcharge) de fonctions}
+ En \Cpp deux fonctions peuvent porter le même nom dès lors qu'elles n'ont pas
+les mêmes types d'argument
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void dummy(int i, double a, char c);
+void dummy(int i, int a, char c);
+void dummy(int i);
+\end{minted}
+
+\pause
+Le compilateur se charge d'appeler la ``bonne'' fonction par rapport au contexte
+\emph{i.e.} au vu de la liste d'arguments donnée lors de l'appel.
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+int main()
+{
+  dummy(1, 1.0, 'a');
+  dummy(1, 1, 'a');
+  dummy(1);
+}
+\end{minted}
+\end{frame}
+
+
+\begin{comment}
+%-----------------------------------------------------------------------
+\begin{frame}[fragile]{Fonction \texttt{inline}}
+ \structure{Les fonctions en ligne} remplacent (avantageusement) les macros utilisées en C
+tout en conservant un temps d'exécution plus court
+
+\vskip +10pt
+On remplacera ainsi la déclaration en C
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Macro en C
+#define CARRE(x) ((x) * (x))
+\end{minted}
+par
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Fonction en ligne en C++
+inline double carre(const double x) { return x*x; }
+\end{minted}
+\end{frame}
+%---------------------------------------------------------------------------
+\end{comment}
+
+\begin{frame}[fragile]{Le type \texttt{bool}}
+Ce nouveau type est naturellement formé de deux valeurs notées \texttt{true} et \texttt{false}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+bool is_ok = true;
+if (is_ok) {
+  ...
+}
+
+bool is_java_idiom = false;
+bool is_c_idiom = is_ok && !is_java_idiom;
+\end{minted}
+\end{frame}
+
+%--------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Les espaces de noms}
+Les espaces de noms sont des zones de déclaration qui permettent de délimiter la recherche des noms des identificateurs par le compilateur.
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+namespace util {
+  double angle (double re, double im) {
+    /* Calcul l'angle d'un nombre complexe */
+  }
+}
+namespace ondes {
+  double angle (double phase1, double phase2) {
+    /* Calcule l'angle entre deux phases, ramené dans ]-pi,+pi] */
+  }
+}
+\end{minted}
+
+Leur but est principalement d'éviter les conflits de noms entre plusieurs
+parties d'un projet :
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+util::angle(1, 0.4);
+ondes::angle(pi/5, 9*pi/5);
+\end{minted}
+
+\end{frame}
+
+\begin{frame}[fragile]{Les espaces de noms}
+
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include <iostream>
+/* using namespace std; */
+...
+std::cout << "Standard output" << std::endl;
+...
+\end{minted}
+
+\vspace{1em}
+Tout en permettant souvent une syntaxe ``légère'' :
+\vspace{1em}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include <iostream>
+using namespace std;
+...
+cout << "Standard output" << endl;
+...
+\end{minted}
+
+\end{frame}
+
+%--------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Les espaces de noms}
+ \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+namespace utl
+{
+  void dump() { cout << "utl::dump" << endl; }
+}
+namespace io
+{
+  void dump() { cout << "io::dump" << endl; }
+}
+\end{minted}
+\pause
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Utilisation de l'espace de nom io
+using namespace io;
+
+int main()
+{
+  // Par défaut, io::dump()
+  dump();
+
+  // Précision de l'espace de nom
+  utl::dump();
+  io::dump();
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Alias d'espace de noms}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include <iostream>
+ 
+namespace foo {
+    namespace bar {
+         namespace baz {
+             int qux = 42;
+         }
+    }
+}
+ 
+namespace fbz = foo::bar::baz;
+ 
+int main()
+{
+    std::cout << fbz::qux << '\n';
+}
+\end{minted}
+\end{frame}
+
+%--------------------------------------------------------------------------------
+
+
+
+\begin{frame}[fragile]{Rappels sur les adresses et pointeurs}
+ \begin{itemize}
+\item Tout objet manipulé par l'ordinateur est stocké en mémoire. Selon la nature de
+l'objet, l'espace en mémoire alloué varie : par exemple, entier = 32 ou 64 bits
+
+\item \structure{L'adresse} est l'endroit où se trouve la variable en mémoire. Elle s'obtient
+via la syntaxe suivante : \texttt{\&NomDeLaVariable}
+
+\item L'adresse n'étant ni plus ni moins qu'une valeur, on peut donc stocker cette
+valeur dans une variable : \structure{un pointeur} est ainsi un conteneur d'adresse
+
+\item Déclaration d'un pointeur :
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+int i = 10;
+int * pt_i = &i;
+int j = *pt_i;
+\end{minted}
+\end{itemize}
+\end{frame}
+
+%---------------------------------------------------------------------------
+
+
+\begin{frame}[fragile]{Notion de référence en \Cpp}
+ Le \Cpp introduit la notion de référence afin de faciliter la manipulation des
+variables
+
+\begin{columns}
+\begin{column}{0.3\columnwidth}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Pointeur
+int i = 10;
+int * pt_i;
+pt_i = &i;
+(*pt_i)++;
+\end{minted}
+\end{column}
+
+\begin{column}{0.6\columnwidth}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Référence
+int i = 10;
+int & ref_i = i; // ref_i est une référence à i
+ref_i++;
+\end{minted}
+\end{column}
+\end{columns}
+
+\vskip +10pt
+\begin{itemize}
+\item La déclaration d'une référence ne crée pas de nouvel objet, c'est simplement un alias vers une vraie variable. Il n'y a pas besoin de dépointer : utiliser une référence, c'est directement utiliser la variable référencée.
+
+\item Toute référence doit se référer à un identificateur : \texttt{int \& ref\_i;} ne
+compilera pas. Il est nécessaire \structure{d'initialiser} une référence.
+
+\item Une référence pointe toujours vers le même objet, on ne peut pas changer sa
+destination.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Références en tant qu'arguments de fonctions}
+ \begin{columns}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc](Transmission par adresse)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void echange(int * a, int * b)
+{
+  int c = *a;
+  *a = *b;
+  *b = c;
+}
+...
+int x = 10;
+int y = 20;
+echange(&x, &y);
+\end{minted}
+
+\pause
+\end{cbox}
+\end{column}
+
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc](Transmission par référence)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void echange(int & a, int & b)
+{
+  int c = a;
+  a = b;
+  b = c;
+}
+...
+int x = 10;
+int y = 20;
+echange(x, y);
+\end{minted}
+\end{cbox}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+%--------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Allocation dynamique de mémoire}
+ L'allocation dynamique de mémoire est nécessaire dès lors que la taille d'un
+ objet (ou sa nature) n'est connue que lors de l'exécution du programme. Dans le cas
+ d'un tableau de taille n, la déclaration
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+unsigned int n = 0;
+std::cin >> n;
+double tableau[n];
+\end{minted}
+
+n'est pas correcte du fait que le compilateur ne connait pas, au préalable, l'espace
+mémoire nécessaire à l'allocation (statique).
+\end{frame}
+
+%-----------------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Utilisation des opérateurs \texttt{new} et \texttt{delete}}
+ \begin{itemize}
+\item Pour rappel, en langage C, la gestion dynamique de mémoire fait appel aux
+fonctions \texttt{malloc} et \texttt{free} (\texttt{stdlib.h})
+
+\item \Cpp propose deux nouveaux opérateurs :
+
+\begin{itemize}
+\item \texttt{new} alloue une certaine quantité de mémoire et renvoie un pointeur sur le
+début du tableau :
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+unsigned int n = 0;
+std::cin >> n;
+double * tableau = new double[n];
+\end{minted}
+
+\item \texttt{delete[]} libère l'espace mémoire :
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+delete[] tableau;
+\end{minted}
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+%----------------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Portée et durée de vie des variables}
+ \begin{columns}
+\begin{column}{0.6\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Durée de vie limitée au bloc (ici boucle \texttt{for}))
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+for (int i = 0; i < 10; i++) {
+  int k = 0;
+  // À la fin du bloc,
+  // destruction de k
+ }
+\end{minted}
+
+\pause
+\end{cbox}
+\end{column}
+
+\begin{column}{0.6\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Durée de vie indépendante du bloc)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+for (int i = 0; i < 10; i++) {
+  int * k = new int(0);
+  // À la fin du bloc,
+  // k existe en mémoire
+ }
+\end{minted}
+
+\begin{cbox}[5][lrtuc][\centering][9][11]
+Fuite de mémoire garantie
+\end{cbox}
+\end{cbox}
+\end{column}
+\end{columns}
+\end{frame}
+
+%--------------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Portée et durée de vie des variables}
+ \begin{columns}
+\begin{column}{0.6\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Durée de vie limitée au bloc (ici boucle \texttt{for}))
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+for (int i = 0; i < 10; i++) {
+  int k = 0;
+  // À la fin du bloc,
+  // destruction de k
+ }
+\end{minted}
+\end{cbox}
+\end{column}
+
+\begin{column}{0.6\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Durée de vie indépendante du bloc)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+for (int i = 0; i < 10; i++) {
+  int * k = new int(0);
+  ...
+  delete k;
+}
+\end{minted}
+\end{cbox}
+\end{column}
+\end{columns}
+\end{frame}
+\begin{frame}[fragile]{Portée et durée de vie des variables}
+ \begin{columns}
+\begin{column}{0.7\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Allocation sur la pile, “stack” (automatique))
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+int * pointeur_dix()
+{
+  int a = 10;
+  return &a;
+}
+
+int main()
+{
+  int * pb = pointeur_dix();
+  cout << *pb << endl;
+
+  return 0;
+}
+\end{minted}
+\end{cbox}
+\end{column}
+
+\begin{column}{0.6\columnwidth}
+\begin{cbox}[][hidden][\footnotesize](Allocation sur le tas, “heap”)
+\end{cbox}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Portée et durée de vie des variables}
+ \begin{columns}
+\begin{column}{0.7\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Allocation sur la pile, “stack” (automatique))
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+int * pointeur_dix()
+{
+  int a = 10;
+  return &a;
+}
+
+int main()
+{
+  int * pb = pointeur_dix();
+  cout << *pb << endl;
+
+  return 0;
+}
+\end{minted}
+
+\begin{cbox}[5][lrtuc][\centering][3.5][7]
+Le pointeur retourné contient une adresse obsolète
+\end{cbox}
+
+\pause
+\end{cbox}
+\end{column}
+
+\begin{column}{0.6\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Allocation sur le tas, “heap”)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+int * pointeur_dix()
+{
+  int * pa = new int(10);
+  return pa;
+}
+
+int main()
+{
+  int * pb = pointeur_dix();
+  cout << *pb << endl;
+  delete pb;
+  return 0;
+}
+\end{minted}
+\end{cbox}
+\end{column}
+\end{columns}
+\end{frame}
+
+%--------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Principales notions en un exemple}
+ \begin{itemize}
+\item Le \Cpp introduit la notion de référence afin de faciliter la manipulation des
+variables notamment au sein des fonctions
+
+\begin{center}
+\structure{\(\rightarrow\) transmission des arguments par référence}
+\end{center}
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\item En \Cpp plusieurs fonctions peuvent porter le même nom dès lors qu'elles n'ont
+pas le même contexte d'appel
+
+\begin{center}
+\structure{\(\rightarrow\) surdéfinition ou surcharge de fonction}
+\end{center}
+\end{itemize}
+
+\pause
+
+\begin{itemize}
+\item Les macros sont à éviter. Les seules véritables directives de préprocesseur à
+utiliser sont \structure{\texttt{\#include}, \texttt{\#ifndef} / \texttt{\#define}}
+
+\begin{center}
+\structure{\(\rightarrow\) compilation séparée}
+\end{center}
+\end{itemize}
+\end{frame}
+
+
+%--------------------------------------------------------------------
+
+
+\begin{frame}[fragile]{}
+ \begin{cbox}[][lwuc](\texttt{dummy.h})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#ifndef __dummy_h__
+#define __dummy_h__ 1
+void dummy();
+void dummy(int i);
+void dummy(int & i, double & a, char & c);
+#endif
+\end{minted}
+
+\vspace{-0cm}
+\end{cbox}
+
+\begin{cbox}[][lwuc](\texttt{dummy.cpp})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include<iostream>
+#include "dummy.h"
+using namespace std;
+void dummy() {cout << "fct type void, pas d'argument" << endl;}
+void dummy(int i) {
+  cout << "fct type void, 1 argument type entier" << endl;}
+void dummy(int & i, double & a, char & c) {
+  cout << "fct type void, 3 arguments : ref sur entier, réel et caractère"
+  << endl;}
+\end{minted}
+
+\vspace{-0cm}
+\end{cbox}
+\end{frame}
+
+%------------------------------------------------------
+
+\begin{frame}[fragile]{}
+\begin{cbox}[][lwuc](\texttt{test\_dummy.cpp})
+  \begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include<iostream>
+using namespace std;
+#include "dummy.h"
+int main()
+{
+  cout << "Programme test des fonctions dummy" << endl;
+  dummy();
+  int i = 10; double  d = 2.0; char c = 'a';
+  dummy(i, d, c);
+}
+\end{minted}
+\end{cbox}
+\end{frame}
+
+
+%----------------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{}
+ \begin{cbox}[6][lbtuc][\centering][9][1]
+Transmission par référence
+\end{cbox}
+
+\begin{cbox}[][lwuc](\texttt{dummy.h})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#ifndef __dummy_h__
+#define __dummy_h__ 1
+void dummy();
+void dummy(int i);
+void dummy(int & i, double & a, char & c);
+#endif
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=blue]
+  ([yshift=-0.75ex,xshift= 2ex]minted-5) rectangle
+  ([yshift=+1.50ex,xshift=43ex]minted-5);
+  \node[] () [xshift=+6.6cm, yshift=+0.4ex, right=of minted-5.east]
+       {\textcolor{blue}{\scriptsize Déclaration de la fonction}};
+\end{tikzpicture}
+
+\vspace{-0.7cm}
+\end{cbox}
+
+\begin{cbox}[][lwuc](\texttt{dummy.cpp})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+...
+#include "dummy.h"
+void dummy() {...}
+void dummy(int i) {...}
+void dummy(int & i, double & a, char & c) {...}
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=blue]
+  ([yshift=-0.75ex,xshift= 2ex]minted-4) rectangle
+  ([yshift=+1.50ex,xshift=43ex]minted-4);
+  \node[] () [xshift=+6.6cm, yshift=+0.4ex, right=of minted-4.east]
+       {\textcolor{blue}{\scriptsize Définition de la fonction}};
+\end{tikzpicture}
+
+\vspace{-0.7cm}
+\end{cbox}
+
+\begin{cbox}[][lwuc](\texttt{test\_dummy.cpp})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include "dummy.h"
+int main()
+{
+  dummy();
+  int i = 10; double d = 2.0; char c = 'a';
+  dummy(i, d, c);
+}
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=blue]
+  ([yshift=-0.75ex,xshift= 2ex]minted-6) rectangle
+  ([yshift=+1.50ex,xshift=43ex]minted-6);
+  \node[] () [xshift=+6.6cm, yshift=+0.4ex, right=of minted-6.east]
+       {\textcolor{blue}{\scriptsize Appel de la fonction}};
+\end{tikzpicture}
+\end{cbox}
+\end{frame}
+
+\begin{frame}[fragile]{}
+ \begin{cbox}[6][lgtuc][\centering][9][1]
+Surdéfinition de fonction
+\end{cbox}
+
+\begin{cbox}[][lwuc](\texttt{dummy.h})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#ifndef __dummy_h__
+#define __dummy_h__ 1
+void dummy();
+void dummy(int i);
+void dummy(int & i, double & a, char & c);
+#endif
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=green]
+  ([yshift=-0.75ex,xshift= 2ex]minted-5) rectangle
+  ([yshift=+6.00ex,xshift=43ex]minted-5);
+  \node[] () [xshift=+6.6cm, yshift=+0.4ex, right=of minted-4.east]
+       {\textcolor{green}{\scriptsize Déclaration des fonctions}};
+\end{tikzpicture}
+
+\vspace{-0.7cm}
+\end{cbox}
+
+\begin{cbox}[][lwuc](\texttt{dummy.cpp})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+...
+#include "dummy.h"
+void dummy() {...}
+void dummy(int i) {...}
+void dummy(int & i, double & a, char & c) {...}
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=green]
+  ([yshift=-0.75ex,xshift= 2ex]minted-4) rectangle
+  ([yshift=+6.00ex,xshift=43ex]minted-4);
+  \node[] () [xshift=+6.6cm, yshift=+0.4ex, right=of minted-3.east]
+       {\textcolor{green}{\scriptsize Définition des fonctions}};
+\end{tikzpicture}
+
+\vspace{-0.7cm}
+\end{cbox}
+
+\begin{cbox}[][lwuc](\texttt{test\_dummy.cpp})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include "dummy.h"
+int main()
+{
+  dummy();
+  int i = 10; double d = 2.0; char c = 'a';
+  dummy(i, d, c);
+}
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=green]
+  ([yshift=-0.75ex,xshift= 2ex]minted-4) rectangle
+  ([yshift=+1.50ex,xshift=43ex]minted-4);
+  \draw[codeblock=green]
+  ([yshift=-0.75ex,xshift= 2ex]minted-6) rectangle
+  ([yshift=+1.50ex,xshift=43ex]minted-6);
+  \node[] (t) [xshift=+6.6cm, yshift=+0.4ex, right=of minted-5.east]{
+    \textcolor{green}{\scriptsize Appel des fonctions}};
+  \draw[->, green] (t.west) to [out=180, in=0]
+  ([xshift=42.5ex, yshift=+0.4ex]minted-4.east);
+  \draw[->, green] (t.west) to [out=180, in=0]
+  ([xshift=42.5ex, yshift=+0.4ex]minted-6.east);
+\end{tikzpicture}
+\end{cbox}
+\end{frame}
+
+\begin{frame}[fragile]{}
+ \begin{cbox}[6][lotuc][\centering][9][14]
+Directives de préprocesseur
+\end{cbox}
+
+\begin{cbox}[][lwuc](\texttt{dummy.h})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#ifndef __dummy_h__
+#define __dummy_h__ 1
+void dummy();
+void dummy(int i);
+void dummy(int & i, double & a, char & c);
+#endif
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=orange]
+  ([yshift=-0.75ex,xshift= 2ex]minted-2) rectangle
+  ([yshift=+3.75ex,xshift=43ex]minted-2);
+  \draw[codeblock=orange]
+  ([yshift=-0.75ex,xshift= 2ex]minted-6) rectangle
+  ([yshift=+1.50ex,xshift=43ex]minted-6);
+\end{tikzpicture}
+
+\vspace{-0.7cm}
+\end{cbox}
+
+\begin{cbox}[][lwuc](\texttt{dummy.cpp})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+...
+#include "dummy.h"
+void dummy() {...}
+void dummy(int i) {...}
+void dummy(int & i, double & a, char & c) {...}
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=orange]
+  ([yshift=-0.75ex,xshift= 2ex]minted-1) rectangle
+  ([yshift=+1.50ex,xshift=43ex]minted-1);
+\end{tikzpicture}
+
+\vspace{-0.7cm}
+\end{cbox}
+
+\begin{cbox}[][lwuc](\texttt{test\_dummy.cpp})
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include "dummy.h"
+int main()
+{
+  dummy();
+  int i = 10; double d = 2.0; char c = 'a';
+  dummy(i, d, c);
+}
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=orange]
+  ([yshift=-0.75ex,xshift= 2ex]minted-1) rectangle
+  ([yshift=+1.50ex,xshift=43ex]minted-1);
+\end{tikzpicture}
+\end{cbox}
+\end{frame}
+
+%----------------------------------------------------------------
+
+
+\begin{frame}{Compilation}
+\begin{prompt}
+g++ dummy.cpp test\_dummy.cpp -o test\_dummy.exe
+\end{prompt}
+
+\begin{cbox}[][][\centering]
+\ding{42} Les fichiers d'en-tête ne sont jamais compilés !
+\end{cbox}
+\end{frame}
+
+
+\end{document}

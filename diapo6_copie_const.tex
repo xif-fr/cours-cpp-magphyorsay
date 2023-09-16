@@ -1,0 +1,296 @@
+\documentclass[c]{beamer}
+\usepackage{org-preamble}
+\usepackage[cpp_teaching]{slide-style}
+\usepackage{minted}
+\usetheme{default}
+\newcommand{\inline}[1]{\mintinline[breaklines]{c++}{#1}}
+
+
+\title{Copie d'objets et ``const''}
+
+\begin{document}
+
+\maketitle
+\setbeamercovered{invisible}
+
+\begin{frame}[fragile]{Rappel : passage par valeur, par référence}
+ \begin{columns}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Passage par valeur)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void f(int i) {
+  i = 10;
+  cout << "f : " << i << endl;
+}
+
+void main() {
+  int e = 0;
+  f(e);
+  cout << "main : " << e << endl;
+}
+\end{minted}
+
+\onslide<2>\tt
+\begin{cbox}
+f : 10\\
+main : 0
+\end{cbox}
+
+\onslide<all>
+\end{cbox}
+\end{column}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Passage par référence)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void g(int& i) {
+  i = 10;
+  cout << "g : " << i << endl;
+}
+
+void main() {
+  int e = 0;
+  g(e);
+  cout << "main : " << e << endl;
+}
+\end{minted}
+
+\onslide<2>\tt
+\begin{cbox}
+g : 10\\
+main : 10
+\end{cbox}
+\end{cbox}
+\end{column}
+\end{columns}
+\end{frame}
+
+%-----------------------------------------
+
+\begin{frame}[fragile]{Passage d'objets par valeur, par référence}
+ \begin{columns}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Passage par valeur)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void f(Complexe z) {
+  z.set_real_imag(2, 3);
+  cout << "f : ";
+  z.affiche();
+}
+
+void main() {
+  Complexe p(1, 0.5);
+  f(p);
+  cout << "main : ";
+  p.affiche();
+}
+\end{minted}
+
+\onslide<2>\tt
+\begin{cbox}
+f : (2 + 3i)\\
+main : (1 + 0.5i)
+\end{cbox}
+
+\onslide<all>
+\end{cbox}
+\end{column}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Passage par référence)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void g(Complexe& z) {
+  z.set_real_imag(2, 3);
+  cout << "g : ";
+  z.affiche();
+}
+
+void main() {
+  Complexe p(1, 0.5);
+  g(p);
+  cout << "main : ";
+  p.affiche();
+}
+\end{minted}
+
+\onslide<2>\tt
+\begin{cbox}
+g : (2 + 3i)\\
+main : (2 + 3i)
+\end{cbox}
+\end{cbox}
+\end{column}
+\end{columns}
+\end{frame}
+
+%-------------------------------------
+
+\begin{frame}[fragile]{Passage d'objets par valeur, par référence constante}
+ \onslide<all>
+\begin{columns}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Passage par valeur)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void f(Complexe z) {
+  cout << "Le complexe vaut ";
+  z.affiche();
+}
+
+void main() {
+  Complexe p(1, 0.5);
+  f(p);
+}
+\end{minted}
+
+\onslide<2>
+\begin{cbox}[][][\centering]
+L'objet est copié (constructeur par copie appelé)
+\end{cbox}
+
+\onslide<all>
+\end{cbox}
+\end{column}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Passage par référence constante)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void g(const Complexe& z) {
+  cout << "Le complexe vaut ";
+  z.affiche();
+}
+
+void main() {
+  Complexe p(1, 0.5);
+  g(p);
+}
+\end{minted}
+
+\onslide<2>
+\begin{cbox}[][][\centering]
+Une copie inutile est évitée
+\end{cbox}
+\vspace{0.45em}
+\end{cbox}
+\end{column}
+\end{columns}
+
+\vspace{1em}
+\pause
+$\rightarrow$ Utile pour les objets volumineux (tableaux, listes...). Parfois indispensable (objet non copiable).
+
+\end{frame}
+
+%---------------------------------------------
+
+\begin{frame}[fragile]{Objets constants}
+Le mot-clé \inline{const} interdit la modification de l'objet auquel il s'applique.
+\vspace{1em}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+const int i = 42;
+i = 3;  // erreur de compilation
+\end{minted}
+
+\vspace{1em}
+\pause
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void f(const Complexe& z)
+{
+  z.affiche();  // possible
+  z.set_real_imag(1, 2);  // impossible
+}
+\end{minted}
+
+\pause
+
+Le compilateur doit "savoir" quelles méthodes modifient l'objet.
+\end{frame}
+
+%---------------------------------------------
+
+\begin{frame}[fragile]{Méthodes constantes}
+
+\def\theFancyVerbLine{%
+  \color{white}\sffamily\tiny\arabic{FancyVerbLine}%
+        {\tikz[remember picture,overlay]\node(minted-\arabic{FancyVerbLine}){};}%
+}
+\tikzset{codeblock/.style={color=#1!50,rounded corners=0.5ex, opacity=0.2, fill}}
+
+Le prototype d'une méthode doit se terminer par \inline{const} si celle-ci ne modifie pas l'objet :
+\vspace{1em}
+
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Complexe
+{
+public:
+  ...
+  void affiche() const;
+  void norme() const;
+  void set_real_imag(double real, double imag);
+  ...
+};
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=blue]
+  ([yshift=-0.5ex,xshift=14.75ex]minted-6) rectangle
+  ([yshift=+1.25ex,xshift=19.15ex]minted-6);
+  \draw[codeblock=blue]
+  ([yshift=-0.5ex,xshift=16.5ex]minted-5) rectangle
+  ([yshift=+1.25ex,xshift=21ex]minted-5);
+\end{tikzpicture}
+
+\pause
+\begin{cbox}[6][lbtuc][\centering\small][9][5]
+\ding{42} Ces méthodes ne peuvent pas modifier les membres de la classe
+\end{cbox}
+
+\begin{itemize}
+\item Par défaut les méthodes peuvent modifier l'objet.
+\item En cas d'oubli de \inline{const}, la méthode \emph{n'est pas utilisable sur des objets constants} !
+\end{itemize}
+\end{frame}
+
+%---------------------------------------------
+
+\begin{frame}[fragile]{Exemple de copie évitable}
+Mais on peut souvent éviter des copies inutiles :
+
+\begin{columns}
+\begin{column}{0.5\columnwidth}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+Complexe f()
+{
+  Complexe z(1, 2);
+  return z;
+}
+\end{minted}
+
+\begin{cbox}[][lwuc][\centering\footnotesize]
+La variable locale \texttt{z} est copiée dans un objet anonyme retourné par la
+fonction.
+\end{cbox}
+
+\pause
+\end{column}
+\begin{column}{0.5\columnwidth}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+Complexe f()
+{
+  return Complexe(1, 2);
+}
+\end{minted}
+
+\vspace{0.7em}
+
+\begin{cbox}[][lwuc][\centering\footnotesize]
+Il n'y a plus de variable locale. L'objet anonyme est construit directement.
+\end{cbox}
+\end{column}
+\end{columns}
+
+\vspace{1.5em}
+\pause
+{\small Le compilateur est souvent capable d'effectuer ces optimisations automatiquement, mais mieux vaut prendre des bonnes habitudes.}
+
+\end{frame}
+
+
+
+\end{document}

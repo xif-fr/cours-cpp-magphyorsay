@@ -1,0 +1,485 @@
+\documentclass[c]{beamer}
+\usepackage{org-preamble}
+\usepackage[cpp_teaching]{slide-style}
+\usetheme{default}
+\newcommand{\inline}[1]{\mintinline[breaklines]{c++}{#1}}
+\newcommand{\cpp}{\mbox{C\vspace{.5em}\protect\raisebox{.2ex}{\footnotesize++}}}
+
+
+\title{Affectation \& méthodes spéciales}
+
+\begin{document}
+
+\maketitle
+
+%--------------------------------------------------
+
+\begin{frame}[fragile]{Méthodes spéciales}
+Pour l'instant, vous connaissez :
+\begin{itemize}
+  \item les constructeurs \inline{Classe::Classe(a,b,c,...)}
+  \item le constructeur par défaut \inline{Classe::Classe()}
+  \item le constructeur par copie \inline{Classe::Classe(const Classe&)} qui sert à créer un nouvel objet à partir d'un objet existant :\\ \inline{Classe b = a;}
+  \item le destructeur \inline{Classe::~Classe()}
+\end{itemize}
+\pause
+\vspace{1em}
+On peut aussi vouloir assigner un objet à un autre :
+\begin{minted}{c++}
+Classe b;
+...
+b = a;
+\end{minted}
+$\rightarrow$ Assignation par copie
+\end{frame}
+
+
+\begin{frame}[fragile]{Opérateur d'affectation \texttt{=}}
+ \begin{itemize}
+\item L'opérateur d'affectation \texttt{=} permet d'affecter une nouvelle valeur à un objet \structure{déjà existant} :
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+Matrice mat1(...);
+Matrice mat2(...);
+mat2 = mat1;
+\end{minted}
+
+\vspace{1em}
+\item Sa surcharge se fait comme pour n'importe quel opérateur
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Déclaration
+class Matrice {
+  ...
+  Matrice& operator= (const Matrice& matrice_à_copier);
+};
+\end{minted}
+\end{itemize}
+\end{frame}
+
+%------------------------------------------------------------------
+
+\begin{frame}[fragile]{Option n°1}
+Parfois, ça se sert à rien, ou ça n'a pas de sens (en particulier lorsque l'objet n'a pas à être copié). On empêche le compilateur de générer des définitions par défaut :\\
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Classe {
+  ...
+  Classe (const Classe&) = delete;  // construction par copie
+  Classe& operator= (const Classe&) = delete;  // assignation
+};
+\end{minted}
+\end{frame}
+
+%------------------------------------------------------------------
+
+\begin{frame}[fragile]{Option n°2}
+Si la classe ne contient aucun attribut qui nécessite un traitement spécial ($\neq$ allocation dynamique), on laisse le compilateur copier les attributs de façon naïve :\\
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Classe {
+  ...
+  Classe (const Classe&) = default;  // construction par copie
+  Classe& operator= (const Classe&) = default;  // assignation
+};
+\end{minted}
+\end{frame}
+
+%------------------------------------------------------------------
+
+\begin{frame}[fragile]{Option n°3}
+Sinon, pour assigner \inline{obj_b} à \inline{obj_a}, il faut
+\begin{enumerate}
+  \item détruire ce qui appartenait à \inline{obj_a} (désallocation...)
+  \item re-contruire \inline{obj_a} pour accepter le contenu de \inline{obj_b} (allocation...)
+  \item copier (en profondeur) le contenu de \inline{obj_b}
+\end{enumerate}
+\vspace{1em}
+\pause
+C'est pénible et ça demande de dupliquer du code qui est déjà dans le constructeur par copie, on peut faire des erreurs... Idiome \emph{copy-and-swap} :
+\begin{enumerate}[<+->]
+  \item copie temporaire de \inline{obj_b} :\\ \inline{Classe obj_temp (obj_b)}
+  \item intervertir les attributs de \inline{obj_a} $\leftrightarrow$ \inline{obj_temp}
+  \item le compilateur va détruire \inline{obj_temp}, et donc en fait l'ancien contenu de \inline{obj_a}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{Copy-and-swap en pratique}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Matrice {
+  ...
+  ~Matrice();
+  Matrice (const Matrice& matrice_à_copier);
+  Matrice& operator= (const Matrice& matrice_à_copier);
+};
+
+// définition du constructeur par copie
+Matrice::Matrice (const Matrice& matrice_à_copier) { ... }
+
+// définition de l'assignation par copie
+Matrice& Matrice::operator= (const Matrice& matrice_à_copier) {
+  Matrice temp (matrice_à_copier);  // <- copie
+  // échange des attributs
+  std::swap(cols, temp.cols)
+  std::swap(rows, temp.rows)
+  std::swap(data, temp.data)
+  return *this;
+  // <- destruction de temp automatique
+}
+\end{minted}
+\end{frame}
+
+
+\begin{frame}[fragile]{Copy-and-swap en pratique (encore plus concis)}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Matrice {
+  ...
+  ~Matrice();
+  Matrice (const Matrice& matrice_à_copier);
+  Matrice& operator= (const Matrice& matrice_à_copier);
+};
+
+// définition du constructeur par copie
+Matrice::Matrice (const Matrice& matrice_à_copier) { ... }
+
+// définition de l'assignation par copie
+Matrice& Matrice::operator= (Matrice temp) {
+                             // ^- copie
+  // échange des attributs
+  std::swap(cols, temp.cols)
+  std::swap(rows, temp.rows)
+  std::swap(data, temp.data)
+  return *this;
+  // <- destruction de temp automatique
+}
+\end{minted}
+\end{frame}
+
+
+\begin{frame}[fragile]{Copy-and-swap en pratique}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+Matrice mat1 = Matrice(3, 5);
+mat1[2,2] = 4.2;
+cout << "----------\n";
+{
+  Matrice mat2 = Matrice(1, 1);
+  mat2 = mat1; // assignation par copie
+  cout << "mat2[2,2] = " << mat2[2,2] << endl;
+}
+cout << "----------\n";
+cout << "mat1[2,2] = " << mat1[2,2] << endl;
+\end{minted}
+\pause
+\begin{minted}[fontsize=\footnotesize,samepage,xleftmargin=1cm]{text}
+Constructeur matrice 3x5 @0x5569ba101eb0.
+----------
+Constructeur matrice 1x1 @0x5569ba102340.
+Constructeur copie matrice 3x5 @0x5569ba102360.
+Destructeur @0x5569ba102340.
+mat2[2,2] = 4.2
+Destructeur @0x5569ba102360.
+----------
+mat1[2,2] = 4.2
+Destructeur @0x5569ba101eb0.
+\end{minted}
+
+\end{frame}
+
+
+%------------------------------------------------------------------
+
+\begin{frame}[fragile]{[À éviter] On pourrait aussi faire...}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Matrice {
+public:
+  ...  // déclaration (rappel)
+  Matrice& operator= (const Matrice& matrice_à_copier);
+private:
+  double* data;
+  unsigned int cols, rows;
+};
+
+// définition de l'assignation par copie
+Matrice& Matrice::operator= (const Matrice& matrice_à_copier) {
+   if (this != &matrice_à_copier) {  // garde-fou
+      if (data != nullptr) delete[] data;  // déallocation
+      cols = matrice_à_copier.cols;
+      rows = matrice_à_copier.rows;
+      data = new double[cols*rows];  // nouvelle allocation
+      for (unsigned int k = 0; k < cols*rows; k++)
+         data[k] = other.matrice_à_copier[k];  // copie
+   }
+   return *this;
+}
+\end{minted}
+
+\end{frame}
+
+%------------------------------------------------------------------
+
+% \begin{frame}[fragile,label={sec:orgheadline9}]{Opérateur d'affectation \texttt{=}}
+%  \begin{itemize}
+% \item Rien n'empêche toutefois d'affecter un objet à lui-même
+
+% \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+% point my_point;
+% my_point = my_point;
+% \end{minted}
+
+% \item Lorsque cette ``affectation'' risque de corrompre l'objet, utiliser un
+% garde-fou :
+
+% \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+% // Définition
+% point & point::operator=(const point & point_)
+% {
+%   if (&point_ != this) { // garde-fou
+%     m_x = point_.m_x;
+%     m_y = point_.m_y;
+%   }
+%   return *this;
+% }
+% \end{minted}
+% \end{itemize}
+% \end{frame}
+
+% \begin{frame}[fragile,label={sec:orgheadline10}]{Constructeur de recopie et opérateur d'affectation \texttt{=}}
+%  \begin{itemize}
+% \item Le constructeur de recopie est la méthode appelée lors de la copie d'un objet
+% vers un autre objet du même type
+
+% \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+% int main()
+% {
+%   point my_vec1(2, 3);
+%   point my_vec2 = my_vec1;
+% }
+% \end{minted}
+% \pause
+% \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+% class point
+% {
+%   point(const point & point_);
+% };
+
+% point::point(const point & point_)
+% {
+%   m_x = point_.m_x;
+%   m_y = point_.m_y;
+% }
+% \end{minted}
+% \end{itemize}
+% \end{frame}
+
+% %---------------------------
+
+% \begin{frame}[fragile,label={sec:orgheadline11}]{Constructeur de recopie et opérateur d'affectation \texttt{=}}
+%   \begin{itemize}
+%   \item  objets a, b existent avec emplacements dyn. de tailles diff.
+    
+%   \item affectation \structure{b = a} équivalent à \structure{b.egal(a)} :\\  
+    
+%     \bigskip
+  
+%   \item[$\bullet$] \structure{passage de \texttt{a} par valeur}
+%     \begin{itemize}
+%     \item[-] x (locale) = a // constructeur de recopie nécessaire
+%     \item[-] delete b
+%     \item[-] new b
+%     \item[-] b=x //copie des valeurs des données de x dans b
+%     \end{itemize}
+
+%     \bigskip
+    
+%   \item[$\bullet$] \structure{passage de \texttt{a} par référence}
+%     \begin{itemize}
+%     \item[-] delete b
+%     \item[-] new b
+%     \item[-] b=a //copie des valeurs des données de a dans b
+%     \end{itemize}
+
+%     \pause
+%       \begin{cbox}[6][lbtuc][\centering\small][9][7.5]
+%         \ding{42} si a=b OK 
+%       \end{cbox}
+
+
+%        \pause
+%       \begin{cbox}[6][lbtuc][\centering\small][9][11]
+%         \ding{42} si a=b problème 
+%       \end{cbox}
+    
+%   \end{itemize}
+% \end{frame}
+
+% %----------------------------
+
+
+% \begin{frame}[fragile,label={sec:orgheadline11}]{Constructeur de recopie et opérateur d'affectation \texttt{=}}
+%  \begin{itemize}
+% \item \Cpp fournit par défaut le constructeur de recopie et l'opérateur
+% d'affectation \texttt{=}
+
+% \item Lorsque ces versions triviales ne suffisent pas (cas de \structure{l'allocation
+% dynamique}) il faut choisir entre deux solutions :
+
+% \begin{itemize}
+% \item Écrire une version correcte (constructeur par copie, surcharge opérateur d'affectation, destructeur)
+
+% \item Rendre impossible la copie et l'affectation, en déclarant ces méthodes
+% privées, sans les définir :
+
+% \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+% class pas_de_copie
+% {
+% private:
+%   pas_de_copie(const pas_de_copie&);
+%   pas_de_copie & operator=(const pas_de_copie&);
+% };
+% \end{minted}
+% \end{itemize}
+% \end{itemize}
+% \end{frame}
+
+%------------------------------------------------------------------
+
+\begin{frame}[fragile]{En résumé : deux règles suivant les cas}
+
+\emph{Règle des trois} :\\[0.5em]
+Si l'on définit un constructeur qui ouvre une ressource, alloue de la mémoire... ou n'importe lesquelles des méthodes spéciales
+\begin{itemize}
+  \item[-] Constructeur par copie
+  \item[-] Destructeur
+  \item[-] Assignation par copie
+\end{itemize}
+\pause
+c'est qu'il faut \textbf{toutes} les définir !\footnote{Définir ne veut pas dire nécessairement les implémenter, lorsque c'est pertinent on peut supprimer la copie ou l'assignation. Pourquoi cette règle ? Eh bien sinon, le compilateur génèrera des méthodes spéciales par défaut qui n'auront pas le bon comportement (copie superficielle).}
+\vspace{1em}
+
+\begin{minted}[fontsize=\footnotesize,samepage]{c++}
+class Classe {
+  Classe (...);  // constructeurs
+  Classe (const Classe&);  // constructeur par copie
+  Classe& operator= (const Classe&);  // assignation par copie
+  ~Classe();  // destructeur
+};
+\end{minted}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{En résumé : deux règles suivant les cas}
+
+\emph{Règle du zéro} :\\[0.5em]
+Utiliser au maximum les objets de bibliothèques existantes (\inline{std::vector}, \inline{std::string}) et éviter l'allocation manuelle de mémoire. On peut alors laisser le compilateur implémenter toutes les méthodes spéciales par défaut !
+\vspace{1em}
+
+\begin{minted}[fontsize=\footnotesize,samepage]{c++}
+class Classe {
+  Classe (...);  // constructeurs
+  Classe (const Classe&) = default;
+  Classe& operator= (const Classe&) = default;
+  // pas de destructeur
+};
+\end{minted}
+
+\end{frame}
+
+%---------------------------------------------------------------
+
+\begin{frame}{}
+\partpage
+\end{frame}
+
+\begin{frame}[fragile]{Move semantics}
+Dans le \cpp11, un nouveau concept a été introduit : le déplacement d'objets (\textit{move semantics}). L'objectif est de gagner en performances en évitant les copies inutiles. Ainsi qu'en permettant le déplacement d'un objet même lorsque la copie n'a pas de sens. Par exemple, lors d'un retour de fonction :
+\begin{minted}[fontsize=\footnotesize,samepage,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+std::vector<int> ma_fonction () {
+  std::vector<int> vec;
+  ...
+  return vec;
+}
+
+...
+std::vector<int> resultat = ma_fonction();
+\end{minted}
+le compilateur va \emph{déplacer} \texttt{vec} dans \texttt{resultat}, au lieu d'appeller le constructeur par copie de \inline{std::vector<int>}.
+\end{frame}
+
+\begin{frame}[fragile]{Move semantics}
+Pour cela, le \cpp11 a introduit les \textit{rvalue references} (que l'on pourrait traduire par "référence de valeur à droite d'une égalité"), par opposition aux usuelles \textit{lvalue references}. Une \textit{rvalue references} d'un type \inline{Type} se note \inline{Type&&}.\\
+
+Il existe alors deux nouvelles méthodes spéciales : le constructeur par déplacement, et l'assignation par déplacement :
+\begin{minted}[fontsize=\footnotesize,samepage]{c++}
+class Classe {
+  Classe (...);  // constructeurs
+  Classe (const Classe&);  // constructeur par copie
+  Classe& operator= (const Classe&);  // assignation par copie
+  Classe (Classe&&);  // constructeur par déplacement
+  Classe& operator= (Classe&&);  // assignation par déplacement
+  ~Classe();  // destructeur
+};
+\end{minted}
+qui seront appelés à la place de celles par copie lorsque l'objet de droite est une \textit{rvalue references}.
+\end{frame}
+
+\begin{frame}[fragile]{Move semantics}
+Exemple :
+\vspace{1em}
+\begin{minted}[fontsize=\footnotesize,samepage]{c++}
+Classe c1 (...);
+
+Classe c2 = c2; // constructeur par copie
+
+Classe c3 = std::move(c1); // constructeur par déplacement
+\end{minted}
+\vspace{1em}
+Ici, \inline{c1} est déplacé dans \inline{c3}, et non copié. Attention, après cette opération, \inline{c1} ne doit plus être utilisé !
+\end{frame}
+
+%--------------------------------------------------------------
+
+\begin{frame}[fragile]{Move semantics}
+Exemple avec \inline{Matrice} :
+\vspace{1em}
+\begin{minted}[fontsize=\footnotesize,samepage]{c++}
+// Définition du constructeur par déplacement
+Matrice::Matrice (Matrice&& mat_à_déplacer)
+  // on "vole" les attributs de `mat_à_déplacer`
+  : cols(mat_à_déplacer.cols), rows(mat_à_déplacer.rows), data(mat_à_déplacer.data)
+{
+  // on laisse `mat_à_déplacer` dans un état valide :
+  mat_à_déplacer.cols = 0;
+  mat_à_déplacer.rows = 0;
+  mat_à_déplacer.data = nullptr;
+}
+\end{minted}
+\vspace{1em}
+Déplacer un objet, ce n'est rien d'autre que \emph{voler ses attributs} tout en laissant derrière soi un état valide
+\end{frame}
+
+\begin{frame}[fragile]{Move semantics}
+Lorsque la classe ne contient que des attributs qui n'ont pas besoin de traitement spécial (fermeture de ressource, désallocation...), on peut laisser le compilateur le définir par défaut :
+\begin{minted}[fontsize=\footnotesize,samepage,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Classe {
+  Classe (...);  // constructeurs
+  Classe (Classe&&) = default;  // constructeur par déplacement
+  Classe& operator= (Classe&&) = default;  // assignation par déplacement
+};
+\end{minted}
+Le compilateur les génèrera automatiquement si il n'y a pas de destructeur de défini.
+\end{frame}
+
+%--------------------------------------------------------------
+
+\begin{frame}[fragile]{Move semantics}
+Cas d'utilisation :
+\begin{itemize}
+  \item On peut vouloir stocker des objets de type \inline{Classe}, non copiables (par exemple représentant une ressource physique), dans un \inline{std::vector<Classe>}. C'est possible, mais seulement si le constructeur par déplacement est défini.
+  \item \inline{std::sort()} passe sa vie à échanger des éléments dans un tableau pour le trier : ça sera beaucoup plus efficace si constructeur par déplacement est défini !
+  \item Lorsque les types des attributs utilisés sont élémentaires (\inline{int}, \inline{double}...), ça ne sert à rien
+  \item Ça reste une notion complexe et avancée qu'il n'est pas du tout nécessaire de maîtriser ni même de connaître
+\end{itemize}
+\end{frame}
+
+\end{document}

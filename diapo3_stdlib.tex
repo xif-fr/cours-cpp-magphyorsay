@@ -1,0 +1,392 @@
+\documentclass[c]{beamer}
+\usepackage{org-preamble}
+\usepackage[cpp_teaching]{slide-style}
+\usepackage{minted}
+\newcommand{\inline}[1]{\mintinline[breaklines]{c++}{#1}}
+\usepackage{xcolor}
+\usepackage{newunicodechar}
+
+\title{Bibliothèque standard : tableaux et quelques autres classes}
+\subtitle{Partie 1}
+
+\begin{document}
+
+\maketitle
+
+%--------------------------------------------------------------------
+
+\begin{frame}[fragile]{Bibliothèque standard}
+
+\begin{itemize}
+\item \href{https://en.cppreference.com/w/cpp/container}{Conteneurs} : \inline{std::vector}, \inline{std::list}, \inline{std::array}, \inline{std::map} (=\texttt{dict} de python), \inline{std::stack}, \inline{std::queue}, itérateurs...
+\item \href{https://en.cppreference.com/w/cpp/string}{Chaines de caractères} : \inline{std::string}, UTF-8, locales, \inline{std::sstream}, \inline{std::format}, expressions régulières...
+\item \href{https://en.cppreference.com/w/cpp/algorithm}{Algorithmes} : \inline{std::transform()}, \inline{std::find()}, \inline{std::count()}, \inline{std::replace()}, \inline{std::reverse()}, \inline{std::sort()}, min, max, intersections, unions... et la toute nouvelle \href{https://en.cppreference.com/w/cpp/ranges}{\texttt{<ranges>}}
+\item Mesure du temps et des dates : \href{https://en.cppreference.com/w/cpp/chrono}{\texttt{<chrono>}}
+\item Génération pseudo-aléatoire (loi uniforme, normale, poissonienne...) : \href{https://en.cppreference.com/w/cpp/numeric/random}{\texttt{<random>}}
+\item \href{https://en.cppreference.com/w/cpp/thread}{Parallélisme} : threads, verrous...
+\item \href{https://en.cppreference.com/w/cpp/memory}{Pointeurs automatiques} : \inline{std::shared_ptr}, \inline{std::unique_ptr}
+\item Opérations vectorisées ("à la numpy") : \href{https://en.cppreference.com/w/cpp/numeric/valarray}{\texttt{<valarray>}}
+\item \href{https://en.cppreference.com/w/cpp/numeric/special_functions}{Fonctions mathématiques spéciales} (fonctions de Bessel...)
+\item \href{https://en.cppreference.com/w/cpp/utility#General-purpose_utilities}{Objets utiles} : \inline{std::tuple}, \inline{std::optional}, \href{https://en.cppreference.com/w/cpp/numeric/complex}{\inline{std::complex}}...
+\end{itemize}
+
+\end{frame}
+
+%---------------------------------------------------------------------
+
+\begin{frame}[fragile]{Le conteneur \texttt{vector}}
+ \begin{itemize}
+\item La classe \texttt{vector} est proche par son utilisation du tableau défini en C
+
+\item Avantages majeurs de la classe \texttt{vector} :
+
+\begin{enumerate}
+\item possibilité de stocker n'importe que type (uniforme) de données
+
+\item capacité à réallouer automatiquement l'espace mémoire nécessaire lors de l'ajout d'éléments ou lors de redimensionnement $\rightarrow$ \emph{taille dynamique}
+
+\item désallocation de mémoire automatique
+
+\item propose un \emph{itérateur} : manipulable par les algorithmes de la bibliothèque standard (tri, somme...) et parcours avec les \emph{range-based loop}
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{La classe \texttt{vector}}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include <vector>
+#include <iostream>
+
+int main()
+{
+  // Déclaration d'un tableau d'entiers vide
+  std::vector<int> tableau;
+
+  // Ajout de trois éléments
+  tableau.push_back(4);
+  tableau.push_back(2);
+  tableau.push_back(5);
+
+  // La méthode size donne le nombre actuel d'éléments
+  for (size_t i = 0; i < tableau.size(); ++i)
+    std::cout << i << ": " << tableau[i] << std::endl;
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{La classe \texttt{vector}}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Création d'un tableau d'entiers contenant 70,70,70,70,70
+std::vector<int> tableau2(5, 70);
+
+// Réassignation des valeurs de ce tableau
+tableau2[0] = 5;
+tableau2[1] = 3;
+tableau2[2] = 7;
+tableau2[3] = 4;
+tableau2[4] = 8;
+
+// Insertion après la position 2
+tableau2.insert(tableau2.begin()+2, 42);
+
+// Récupération du dernier élément du tableau (8)
+cout << tableau2.back() << endl;
+
+// Création par initializer list
+std::vector<int> tableau3 = {4, 8, 1, -4, 5};
+
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Range-based loops}
+
+Tout conteneur présentant des \emph{itérateurs} peuvent être parcourus avec une boucle similaire au \texttt{for x in ...} de Python :
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+for (int x : tableau2) {
+  cout << x << endl;
+}
+\end{minted}
+
+Si les éléments doivent être modifiés, il faut les prendre par référence :
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+for (int& x : tableau2) {
+  x += 2;
+}
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------
+
+\begin{frame}[fragile]{[Bonus] Quelques algorithmes}
+
+Les \href{https://en.cppreference.com/w/cpp/algorithm}{algorithmes de la bibliothèque standard} sont dans le header \texttt{<algorithm>}.
+
+\vspace{1em}
+Recherche :
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+std::vector::iterator it = std::find(tableau3.begin(), tableau3.end(), 4);
+
+if (it != tableau3.end())
+  cout << "4 est en position" << (it - tableau3.begin()) << endl;
+\end{minted}
+
+Ici, \texttt{it} est un \emph{itérateur}. Se comportent comme un pointeur. \inline{vector::begin()} pointe le premier élément, \inline{vector::end()} pointe après le dernier élément. Peuvent être avancés (\inline{it++}, \inline{it+5}), reculés (\inline{it--}), soustraits...
+
+\vspace{1em}
+Tri ascendant :
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+std::sort(tableau3.begin(), tableau3.end());
+// tableau3 est maintenant : {-4, 1, 4, 5, 8}
+\end{minted}
+
+\end{frame}
+
+
+%-------------------------------------------------------------------------
+
+% \begin{frame}[fragile,label={sec:orgheadline8}]{La classe \texttt{vector}}
+%  \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+% // Création d'un vecteur de particule
+% std::vector<particule> my_particles;
+
+% // Création d'un ensemble de particule
+% for (size_t i = 0; i < 10; ++i) {
+%   particule my_particle(0.511*i, -1.6e-19*i);
+%   my_particles.push_back(my_particle);
+
+%   // Affiche la dernière particule
+%   my_particles.back().affiche();
+% }
+% \end{minted}
+% \end{frame}
+
+%-------------------------------------------------------------------------
+
+\begin{frame}[fragile,label={sec:orgheadline6}]{Tableau vs vector : remplissage à partir d'un fichier}
+
+Exemple de remplissage d'un tableau de points à partir d'un fichier de points (fichier deux colonnes \texttt{x} et \texttt{y})
+  
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+  struct point {
+    double x, y;
+  };
+\end{minted}
+
+\end{frame}
+
+%------------------------------------------------------------------------------------------
+\begin{frame}[fragile,label={sec:orgheadline6}]{Tableau vs vector : remplissage à partir d'un fichier}
+
+  \begin{columns}[t]
+    \hspace{-0.8cm} 
+    \begin{column}{0.6\textwidth}
+      \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.1cm,xleftmargin=0.1cm]{c++}
+      ifstream data("donnees.txt");
+      double x, y;
+      unsigned int i = 0, nl = 0;
+      while (data >> x >> y) i++;
+      data.close();
+      nl = i;
+
+      point * tabpoint = new point[nl];
+      i = 0;
+      data.open("donnees.txt");
+      while (data >> x >> y) {
+        tabpoint[i] = {x, y};
+        i++;
+      }
+
+      for (i = 0; i < nl; i++)
+        cout << tabpoint[i].x << "," << tabpoint[i].y << endl;
+
+      delete[] tabpoint;
+      \end{minted}
+    \end{column}
+    \hspace{-0.6cm} 
+    \begin{column}{0.6\textwidth}
+      \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.1cm,xleftmargin=0.1cm]{c++}
+      ifstream data("donnees.txt");
+      double x, y;
+      vector<point> tabpoint;
+      while (data >> x >> y) {
+        tabpoint.push_back({x, y});
+      }
+
+      for (point& p : tabpoint)
+        cout << tabpoint[i].x << ","
+             << tabpoint[i].y << endl;
+      \end{minted}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+%-----------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Chaînes de caractères}
+\begin{itemize}
+\item En C, le texte est représenté par des chaines de caractères \inline{char*} terminées par un zéro. Comme les tableaux C, pénible à manipuler.
+
+\item Dans le même esprit que \inline{std::vector} : la classe \href{https://en.cppreference.com/w/cpp/string}{\inline{std::string}}
+
+\item Avantages majeurs :
+
+\begin{enumerate}
+\item capacité à réallouer automatiquement l'espace mémoire nécessaire lors de l'ajout de texte ou lors de redimensionnement $\rightarrow$ \emph{taille dynamique}
+
+\item désallocation de mémoire automatique
+
+\item concaténations de chaînes, insertion, recherche, sous-chaîne...
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+%------------------------------
+
+\begin{frame}[fragile]{Chaînes de caractères : exemple}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+
+// Initialisation à partir d'un char*
+std::string s1 = "C'est";
+
+// Ajout à la chaine
+s1 += " bien ";
+
+std::string s2 = "partique ?";
+// Remplacement en position 1
+s2.replace(1, 2, "ra");
+// Accès à un caractère par indice
+s2[s2.size()-1] = '!';
+
+// Concaténation et assignation à une nouvelle std::string
+auto s = s1 + s2;
+
+std::cout << s << std::endl;
+// Affiche : C'est bien pratique !
+
+\end{minted}
+
+\end{frame}
+
+%------------------------------
+
+\begin{frame}[fragile]{Chaînes de caractères : autre exemple}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+using namespace std;
+
+// Initialisation d'une chaîne vide
+string s;
+
+// Lecture depuis le terminal
+cin >> s;
+
+// Recherche du premier caractère '@'
+string::size_type pos = s.find('@');
+if (pos != string::npos) {
+  cout << "Le caractère @ a été trouvé en position " << pos << endl;
+
+  // Sous-chaîne : affiche tout ce qui est avant le @
+  cout << s.substr(0, pos) << endl;
+}
+
+\end{minted}
+
+\end{frame}
+
+%------------------------------
+
+\begin{frame}[fragile]{Conversion chaînes $\rightarrow$ nombres}
+
+\begin{itemize}
+
+\item \inline{std::istringstream} : fonctionne comme \inline{std::cin} ou \inline{std::ifstream}
+
+\item \texttt{stoi}, \texttt{stol}, \texttt{stoul}, \texttt{stof}, \texttt{stod}, \texttt{stold}...
+
+\end{itemize}
+
+\end{frame}
+
+%------------------------------
+
+\begin{frame}[fragile]{[Bonus] Formattage des chaînes de caractères}
+
+\large{\textbf{1. Avec \texttt{std::ostringstream}}}\\
+
+Avantage : s'utilise exactement comme \texttt{std::cout}. N'affiche rien en sortie, mais stocke le texte dans un buffer. Le formattage s'effectue avec des \href{https://en.cppreference.com/w/cpp/io/manip}{\textit{manipulateurs}}.
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+
+#include <sstream>
+#include <iomanip>
+
+float pi = 3.1415;
+std::ostringstream s;  // déclaration du buffer-flux
+s << std::fixed << std::setprecision(2);
+s << "pi = " << pi;
+std::string texte = s.str();  // récupération de la chaine de caractère
+
+\end{minted}
+
+$\rightarrow$ Chaine de caractère \texttt{texte} contenant "\texttt{pi = 3.14}".
+
+\end{frame}
+
+\begin{frame}[fragile]{[Bonus] Formattage des chaînes de caractères}
+
+\large{\textbf{2. Avec \href{https://en.cppreference.com/w/cpp/string/basic_string/to_string}{\texttt{std::to\_string}}}}\\
+  
+Convertit un nombre en chaine de caractère. Exemple :
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+
+#include <string>
+using namespace std::string_literals;
+
+int x = 4;
+std::string texte = "chose"s + std::to_string(x) + "truc";
+
+\end{minted}
+
+$\rightarrow$ Chaine de caractère \texttt{texte} contenant "\texttt{chose4truc}".\\
+  
+\small{Peu flexible pour les flottants : notation décimale seulement et précision fixée.\\Note : l'opérateur \texttt{+} n'est défini que sur \inline{std::string}, pas sur \inline{const char*}, d'où la nécessité d'écrire \inline{std::string("chose")+...} ou le littéral \inline{"chose"s} associé et pas \inline{"chose"+...}}\\
+\end{frame}
+
+\begin{frame}[fragile]{[Bonus] Formattage des chaînes de caractères}
+
+\large{\textbf{3. Avec \href{https://en.cppreference.com/w/cpp/utility/format}{\texttt{std::format}}}}\\
+  
+Ce qui est le plus familier et pratique. Fonctionne exactement comme en Python !
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+
+#include <format>
+
+double t = 1234.5;
+double x = 0.776, y = 0.921;
+std::string texte =
+  std::format("Position at t={:.1e} : (x={:.2f},y={:.2f})", t, x, y);
+
+\end{minted}
+
+$\rightarrow$ "\texttt{Position at t=1.2e+3 : (x=0.78,y=0.92)}".\\
+
+{\small\textcolor{gray}{\textit{Attention, la version de la bibliothèque standard sur les machines du magistère n'est pas assez récente pour comporter \texttt{std::format}...} Vous pouvez installer son ancêtre, la \href{https://fmt.dev/latest/index.html}{libfmt}}.}
+
+\end{frame}
+
+%------------------------------
+
+\end{document}

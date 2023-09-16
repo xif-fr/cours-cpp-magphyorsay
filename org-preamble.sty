@@ -1,0 +1,33 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{org-preamble}[2013/03/03 v0.01 Bundling of Preamble items for Org to LaTeX export]
+
+\RequirePackage{amsmath,amssymb}
+
+\RequirePackage{minted}
+
+\RequirePackage{ifxetex}
+\ifxetex
+\RequirePackage{fontspec}
+\RequirePackage{xunicode}
+%%\else
+\fi
+
+\RequirePackage{hyperref}
+
+\RequirePackage{pifont}
+
+\RequirePackage{graphicx}
+\graphicspath{
+  {./plot/}
+  {./figures/}
+}
+
+\RequirePackage{comment}
+
+\RequirePackage{tikz}
+\usetikzlibrary{positioning,arrows,decorations,backgrounds,patterns,matrix,shapes,fit,calc,shadows,plotmarks,spy,trees}
+
+%% \input "|mkdir -p latex.d"
+%% \input "|mkdir -p /tmp/latex.d"
+
+\RequirePackage{xspace}

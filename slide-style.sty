@@ -99,18 +99,12 @@
   \vfill
 }
 
-\renewcommand{\appendix}{
-  \begin{frame}[plain]{}
-    \partpage
-  \end{frame}
-}
-
 \defbeamertemplate*{part page}{custom}[1][colsep=-4bp,
   rounded=true,shadow=\beamer@themerounded@shadow]{
   \begin{centering}
     \vskip1em\par
     \begin{beamercolorbox}[sep=16pt,center,#1]{part title}
-      \usebeamerfont{part title}\appendixname\par
+      \usebeamerfont{part title}\let\hyperlink\@secondoftwo\insertpart\par
     \end{beamercolorbox}
   \end{centering}
 }
@@ -203,9 +197,7 @@
       \color{generic3}% to color the progressbar
       \hspace*{-\beamer@leftmargin}%
       \rule{\beamer@leftmargin}{2pt}%
-      \rlap{\rule{\dimexpr
-          \beamer@startpageofframe\dimexpr
-          \beamer@rightmargin+\textwidth\relax/\beamer@endpageofdocument}{1pt}}
+      \rlap{\rule{\dimexpr(\beamer@rightmargin+\textwidth)*\beamer@startpageofframe/\beamer@endpageofdocument\relax}{1pt}}
       % next empty line is mandatory!
 
       \vspace{.0\baselineskip}
@@ -238,8 +230,6 @@
 \interfootnotelinepenalty=10000
 
 \ifthenelse{\boolean{cb@cpp_teaching}}{
-
-\renewcommand{\appendixname}{Annexes}
 
 \definecolor{red}{RGB}{221,42,43}
 \definecolor{green}{RGB}{132,184,24}

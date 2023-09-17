@@ -1,8 +1,10 @@
 \documentclass[c]{beamer}
-                \usepackage{org-preamble}
-                \usepackage[cpp_teaching]{slide-style}
-                \usepackage{minted}
+\usepackage{org-preamble}
+\usepackage[cpp_teaching]{slide-style}
+\usepackage{minted}
 \usetheme{default}
+\newcommand{\inline}[1]{\mintinline[breaklines]{c++}{#1}}
+
 
 \title{Programation orientée objet - Classes en C++}
 
@@ -149,7 +151,8 @@ while (appareil_b1.last_voltage > 0) {
 %------------------------------------------------------------------
 
 \begin{frame}[fragile]{Notion de classe}
- \begin{itemize}[<+->]
+
+\begin{itemize}[<+->]
 \item Programmation orientée objet : analyse du problème en termes \structure{\emph{de nature et de structure des
 données}}, et des \structure{\emph{actions}} sur ces structures
 
@@ -167,19 +170,20 @@ données}}, et des \structure{\emph{actions}} sur ces structures
 
 \item Mais la POO, c'est bien plus que ça...
 \end{itemize}
+
 \end{frame}
 
 %------------------------------------------------------------------
 
 \begin{frame}[fragile]{Déclaration de classe}
- \begin{itemize}
+
+\begin{itemize}
 \item Classe \structure{\(\rightarrow\) généralisation de la notion de type}
 \begin{cbox}[][lwuc](\texttt{particule.h})
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 
-class particule
-{
-  public:  // visibilité des membres (cf. cours encapsulation)
+class Particule {
+public:  // visibilité des membres (cf. cours encapsulation)
 
   // Déclaration de données membres
   double masse; // kg
@@ -195,19 +199,19 @@ class particule
 \begin{cbox}[][][\centering]
 \ding{42} Ne pas oublier le point virgule à la fin de la déclaration
 \end{cbox}
+
 \end{frame}
 
 %--------------------------------------------------------------
 
 \begin{frame}[fragile]{Déclaration de classe}
- \begin{itemize}
-\item Classe \structure{\(\rightarrow\) association de données membres et de méthodes (fonctions
-membres)}
+
+\begin{itemize}
+\item Classe \structure{\(\rightarrow\) association de données membres et de méthodes (fonctions membres)}
 \begin{cbox}[][lwuc](\texttt{particule.h})
-  \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-class particule
-{
-  public:
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Particule {
+public:
 
   // Déclaration de données membres
   double masse; // kg
@@ -215,7 +219,7 @@ class particule
   vec3 impulsion; // kg·m/s
 
   // Déclaration des méthodes
-  void initialise(double masse_MeV, double charge_u, vec3 impulsion_SI);
+  void initialise(double masse_MeV, int charge_u, vec3 impulsion_SI);
   void afficher();
   double masse_en_MeV();
   double énergie_en_MeV();
@@ -223,20 +227,21 @@ class particule
 \end{minted}
 \end{cbox}
 \end{itemize}
+
 \end{frame}
 
 %-------------------------------------------
 
 \begin{frame}[fragile]{Déclaration de classe}
- \begin{itemize}
+
+\begin{itemize}
 \item Classe \structure{\(\rightarrow\) association de données membres et de méthodes}
 \begin{cbox}[][lwuc](\texttt{particule.h})
-  \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 #ifndef PARTICULE_H
 #define PARTICULE_H    
-class particule
-{
-  public:
+class Particule {
+public:
 
   // Déclaration de données membres
   double masse; // kg
@@ -253,12 +258,14 @@ class particule
 \end{minted}
 \end{cbox}
 \end{itemize}
+
 \end{frame}
 
 %-------------------------------------------
  
-\begin{frame}[fragile,label={sec:orgheadline5}]{Définition de méthodes de classes}
- \begin{itemize}
+\begin{frame}[fragile]{Définition de méthodes de classes}
+
+\begin{itemize}
 \item Identique à la définition d'une fonction mais préfixée du nom de la classe et
 de l'opérateur de portée \texttt{::}
 \begin{cbox}[][lwuc](\texttt{particule.cpp})
@@ -266,38 +273,39 @@ de l'opérateur de portée \texttt{::}
 #include <iostream>
 #include "particule.h"
 
-void particule::initialise(double masse_MeV, int charge_u, vec3 impulsion_SI) {
+void Particule::initialise(double masse_MeV, int charge_u, vec3 impulsion_SI) {
   masse = masse_MeV * J_per_MeV / (c*c);
   charge = charge_u * unit_charge;
   impulsion = impulsion_SI;
 }
 
-void particule::afficher() {
+void Particule::afficher() {
   std::cout << "m=" << masse_en_MeV() << " MeV/c², q=" << charge/unit_charge << ...
 }
 
-double particule::énergie_en_MeV() { // E² = m²c⁴ + p²c²
+double Particule::énergie_en_MeV() { // E² = m²c⁴ + p²c²
   c2 = c * c;
   return sqrt( pow(masse*c2, 2) + impulsion.norme_carrée()*c2 ) / J_per_MeV;
 }
 \end{minted}
 \end{cbox}
 \end{itemize}
+
 \end{frame}
 
 %----------------------------------------------------------------------------
 
-\begin{frame}[fragile,label={sec:orgheadline6}]{Exemple d'utilisation de la classe \texttt{particule}}
+\begin{frame}[fragile]{Exemple d'utilisation de la classe \texttt{particule}}
+
 \begin{cbox}[][lwuc](\texttt{test\_particule.cpp})
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 #include<iostream>
 using namespace std;
 #include "particule.h"
 
-int main()
-{
+int main() {
   // Instanciation d'objets de type particule
-  particule my_electron, my_proton;
+  Particule my_electron, my_proton;
   my_electron.initialise(0.511, -1, {2e-23,-4e-23,0});
   my_proton.initialise(938.0, +1, {0,0,0});
 
@@ -308,21 +316,22 @@ int main()
 }
 \end{minted}
 \end{cbox}
+
 \end{frame}
 
 %---------------------------------------------------------
 
-\begin{frame}[fragile,label={sec:orgheadline7}]{Exemple d'utilisation de la classe \texttt{particule} : pointeurs}
-  \begin{cbox}[][lwuc](\texttt{test\_particule.cpp})
- \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+\begin{frame}[fragile]{Exemple d'utilisation de la classe \texttt{particule} : pointeurs}
+
+\begin{cbox}[][lwuc](\texttt{test\_particule.cpp})
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 #include<iostream>
 using namespace std;
 #include "particule.h"
 
-int main()
-{
+int main() {
   // Instanciation d'objets de type particule
-  particule* ptr_electron = new particule;
+  Particule * ptr_electron = new Particule;
   ptr_electron->initialise(0.511, -1, {2e-23,-4e-23,0});
 
   cout << "my_electron :" << endl;
@@ -332,9 +341,79 @@ int main()
  
   delete ptr_electron;
 }
- \end{minted}
- \end{cbox}
+\end{minted}
+\end{cbox}
+
 \end{frame}
 
+%------------------------------------------------------
+
+\begin{frame}[fragile]{Objets constants}
+Rappel : le mot-clé \inline{const} interdit la modification de l'objet auquel il s'applique.
+\vspace{1em}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+const int i = 42;
+i = 3;  // erreur de compilation
+\end{minted}
+\vspace{1em}
+
+\pause
+Comment exprimer que :
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void f (const Particule& p) {
+  p.afficher();  // possible
+  p.initialise(...);  // impossible
+}
+\end{minted}
+\vspace{1em}
+
+\pause
+Le compilateur doit savoir quelles méthodes modifient l'objet.
+
+\end{frame}
+
+%---------------------------------------------
+
+\begin{frame}[fragile]{Méthodes constantes}
+
+\def\theFancyVerbLine{%
+  \color{white}\sffamily\tiny\arabic{FancyVerbLine}%
+        {\tikz[remember picture,overlay]\node(minted-\arabic{FancyVerbLine}){};}%
+}
+\tikzset{codeblock/.style={color=#1!50,rounded corners=0.5ex, opacity=0.2, fill}}
+
+Le prototype d'une méthode doit se terminer par \inline{const} si celle-ci ne modifie pas l'objet :
+\vspace{1em}
+
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Particule {
+  // ...
+  void initialise(double masse_MeV, int charge_u, vec3 impulsion_SI);
+  void afficher() const;
+  double masse_en_MeV() const;
+};
+\end{minted}
+
+\pause
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=blue]
+  ([yshift=-0.5ex,xshift=17.25ex]minted-4) rectangle
+  ([yshift=+1.25ex,xshift=21.75ex]minted-4);
+  \draw[codeblock=blue]
+  ([yshift=-0.5ex,xshift=22.25ex]minted-5) rectangle
+  ([yshift=+1.25ex,xshift=26.75ex]minted-5);
+\end{tikzpicture}
+
+\begin{cbox}[7][lbtuc][\centering\small][8][8]
+\ding{42} Ces méthodes ne peuvent pas modifier les membres de la classe
+\vspace{0.1em}
+\end{cbox}
+
+\begin{itemize}
+\item Par défaut les méthodes peuvent modifier l'objet.
+\item En cas d'oubli de \inline{const}, la méthode \emph{n'est pas utilisable sur des objets constants} !
+\end{itemize}
+\end{frame}
 
 \end{document}

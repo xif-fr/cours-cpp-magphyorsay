@@ -63,7 +63,7 @@ int main()
   // Déclaration d'un tableau d'entiers vide
   std::vector<int> tableau;
 
-  // Ajout de trois éléments
+  // Ajout de trois éléments (et allocation mémoire si nécessaire)
   tableau.push_back(4);
   tableau.push_back(2);
   tableau.push_back(5);
@@ -71,6 +71,8 @@ int main()
   // La méthode size donne le nombre actuel d'éléments
   for (size_t i = 0; i < tableau.size(); ++i)
     std::cout << i << ": " << tableau[i] << std::endl;
+
+  // La mémoire est automatiquement libérée ici
 }
 \end{minted}
 \end{frame}
@@ -172,7 +174,7 @@ std::sort(tableau3.begin(), tableau3.end());
 
 %-------------------------------------------------------------------------
 
-\begin{frame}[fragile,label={sec:orgheadline6}]{Tableau vs vector : remplissage à partir d'un fichier}
+\begin{frame}[fragile]{Tableau vs vector : remplissage à partir d'un fichier}
 
 Exemple de remplissage d'un tableau de points à partir d'un fichier de points (fichier deux colonnes \texttt{x} et \texttt{y})
   
@@ -185,7 +187,7 @@ Exemple de remplissage d'un tableau de points à partir d'un fichier de points (
 \end{frame}
 
 %------------------------------------------------------------------------------------------
-\begin{frame}[fragile,label={sec:orgheadline6}]{Tableau vs vector : remplissage à partir d'un fichier}
+\begin{frame}[fragile]{Tableau vs vector : remplissage à partir d'un fichier}
 
   \begin{columns}[t]
     \hspace{-0.8cm} 
@@ -212,6 +214,7 @@ Exemple de remplissage d'un tableau de points à partir d'un fichier de points (
       delete[] tabpoint;
       \end{minted}
     \end{column}
+    \pause
     \hspace{-0.6cm} 
     \begin{column}{0.6\textwidth}
       \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.1cm,xleftmargin=0.1cm]{c++}
@@ -222,7 +225,7 @@ Exemple de remplissage d'un tableau de points à partir d'un fichier de points (
         tabpoint.push_back({x, y});
       }
 
-      for (point& p : tabpoint)
+      for (point p : tabpoint)
         cout << tabpoint[i].x << ","
              << tabpoint[i].y << endl;
       \end{minted}

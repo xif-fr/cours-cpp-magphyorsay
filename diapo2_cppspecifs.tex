@@ -24,7 +24,7 @@
 
 %--------------------------------------------------------------------------------
 
-\begin{frame}[fragile]{Spécifités notables du C++}
+\begin{frame}[fragile]{Spécifités notables du C++ par rapport au C}
   \begin{itemize}  
   \item Bibliothèque standard
   \item Déclaration des variables (emplacement libre)
@@ -64,11 +64,11 @@
 \end{columns}
 
 \vspace{3em}
-De nombreuses autres spécifiques au \Cpp existent (\textit{cf.} diapos 3), l'ensemble formant la bibliothèque standard du \Cpp (\textit{standard library}, ou \textit{std}).
+De nombreuses autres spécifiques au \Cpp existent (\textit{cf.} diapos 3), l'ensemble formant la bibliothèque standard du \Cpp (\textit{standard library}, ou \textit{std lib}).
 
 \end{frame}
 
-\begin{frame}[fragile]{Déclaration de variables}
+\begin{frame}[fragile]{Déclaration de variables, gestion de la mémoire}
 
 \begin{itemize}
 \item Possibilité de déclarer les variables locales quel que soit l'endroit
@@ -80,7 +80,9 @@ for (int i = 0 ; i < 10 ; i++) {
 \end{minted}
 
 \begin{cbox}[][][\centering]
-⚠ \ La variable \texttt{x} n'existe plus en dehors de la boucle
+⚠ \ La variable \texttt{x} n'existe plus en dehors de la boucle\\
+\ \\
+\ding{42} À garder en tête ! Notion de cycle de vie (\textit{scope}). Très différent de Python ou Java (\textit{garbage collector}).
 \end{cbox}
 
 \end{frame}
@@ -92,13 +94,14 @@ for (int i = 0 ; i < 10 ; i++) {
   fonction}
 
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-// Prototype de fonction
+// Prototype de fonction (déclaration)
 void initialize(const double abs, const double ord = 3.4);
 
 int main() {
-  initialize(1.0);
+  initialize(1.0);  // Utilisation
 }
 
+// Définition
 void initialize(const double abs, const double ord)
 { ... }
 \end{minted}
@@ -125,7 +128,7 @@ void dummy(int i);
 \end{minted}
 
 \pause
-Le compilateur se charge d'appeler la ``bonne'' fonction par rapport au contexte
+Le compilateur se charge d'appeler la "bonne" fonction par rapport au contexte
 \emph{i.e.} au vu de la liste d'arguments donnée lors de l'appel.
 
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
@@ -161,17 +164,23 @@ inline double carre(const double x) { return x*x; }
 \end{comment}
 
 \begin{frame}[fragile]{Le type \texttt{bool}}
-Ce nouveau type est naturellement formé de deux valeurs notées \texttt{true} et \texttt{false}
+Ce type est naturellement formé de deux valeurs notées \inline{true} et \inline{false} (remplaçant \texttt{1} et \texttt{0}).
+\vspace{1em}
 
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-bool is_ok = true;
-if (is_ok) {
+bool is_wrong = true;
+if (is_wrong) {
   ...
 }
 
-bool is_java_idiom = false;
-bool is_c_idiom = is_ok && !is_java_idiom;
+bool is_nice = false;
+bool is_ok = is_nice && !is_wrong;
 \end{minted}
+ou
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+bool is_ok = is_nice and not is_wrong;
+\end{minted}
+
 \end{frame}
 
 %--------------------------------------------------------------------------------
@@ -192,8 +201,7 @@ namespace ondes {
 }
 \end{minted}
 
-Leur but est principalement d'éviter les conflits de noms entre plusieurs
-parties d'un projet :
+Leur but est principalement d'éviter les conflits de noms entre plusieurs parties d'un projet :
 
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 util::angle(1, 0.4);
@@ -204,6 +212,8 @@ ondes::angle(pi/5, 9*pi/5);
 
 \begin{frame}[fragile]{Les espaces de noms}
 
+Toute la bibliothèque standard est dans l'espace \texttt{std}.
+\vspace{1em}
 
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 #include <iostream>
@@ -214,7 +224,7 @@ std::cout << "Standard output" << std::endl;
 \end{minted}
 
 \vspace{1em}
-Tout en permettant souvent une syntaxe ``légère'' :
+Tout en permettant une syntaxe légère si désiré :
 \vspace{1em}
 
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
@@ -280,7 +290,10 @@ int main()
 
 %--------------------------------------------------------------------------------
 
+\part{Pointeurs, références et allocation dynamique}
+\frame{\partpage}
 
+%--------------------------------------------------------------------------------
 
 \begin{frame}[fragile]{Rappels sur les adresses et pointeurs}
  \begin{itemize}
@@ -296,9 +309,9 @@ valeur dans une variable : \structure{un pointeur} est ainsi un conteneur d'adre
 \item Déclaration d'un pointeur :
 
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-int i = 10;
-int * pt_i = &i;
-int j = *pt_i;
+int i = 10;  // variable
+int * pt_i = &i;  // déclaration du pointeur et assign. à l'adresse de i
+int j = *pt_i;  // dépointage et copie dans j
 \end{minted}
 \end{itemize}
 \end{frame}
@@ -307,8 +320,7 @@ int j = *pt_i;
 
 
 \begin{frame}[fragile]{Notion de référence en \Cpp}
- Le \Cpp introduit la notion de référence afin de faciliter la manipulation des
-variables
+Le \Cpp introduit la notion de référence afin de faciliter la manipulation des variables
 
 \begin{columns}
 \begin{column}{0.3\columnwidth}
@@ -335,11 +347,9 @@ ref_i++;
 \begin{itemize}
 \item La déclaration d'une référence ne crée pas de nouvel objet, c'est simplement un alias vers une vraie variable. Il n'y a pas besoin de dépointer : utiliser une référence, c'est directement utiliser la variable référencée.
 
-\item Toute référence doit se référer à un identificateur : \texttt{int \& ref\_i;} ne
-compilera pas. Il est nécessaire \structure{d'initialiser} une référence.
+\item Toute référence doit se référer à un identificateur. Il est donc nécessaire \structure{d'initialiser} une référence : \texttt{int \& ref\_i;} ne compilera pas. Une référence pointe toujours vers le même objet, on ne peut pas changer sa destination.
 
-\item Une référence pointe toujours vers le même objet, on ne peut pas changer sa
-destination.
+\item Moins flexible, mais plus pratique et sûr. Suffisant dans la majorité des cas.
 \end{itemize}
 \end{frame}
 
@@ -348,8 +358,7 @@ destination.
 \begin{column}{0.5\columnwidth}
 \begin{cbox}[][lwuc](Transmission par adresse)
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-void echange(int * a, int * b)
-{
+void echange (int * a, int * b) {
   int c = *a;
   *a = *b;
   *b = c;
@@ -367,8 +376,7 @@ echange(&x, &y);
 \begin{column}{0.5\columnwidth}
 \begin{cbox}[][lwuc](Transmission par référence)
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-void echange(int & a, int & b)
-{
+void echange (int & a, int & b) {
   int c = a;
   a = b;
   b = c;
@@ -387,9 +395,7 @@ echange(x, y);
 %--------------------------------------------------------------------------------
 
 \begin{frame}[fragile]{Allocation dynamique de mémoire}
- L'allocation dynamique de mémoire est nécessaire dès lors que la taille d'un
- objet (ou sa nature) n'est connue que lors de l'exécution du programme. Dans le cas
- d'un tableau de taille n, la déclaration
+L'allocation dynamique de mémoire est nécessaire dès lors que la taille d'un objet, sa nature ou même son existence, n'est connue que lors de l'exécution du programme. Dans le cas d'un tableau de taille $n$, la déclaration
 
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 unsigned int n = 0;
@@ -408,18 +414,29 @@ mémoire nécessaire à l'allocation (statique).
 \item Pour rappel, en langage C, la gestion dynamique de mémoire fait appel aux
 fonctions \texttt{malloc} et \texttt{free} (\texttt{stdlib.h})
 
-\item \Cpp propose deux nouveaux opérateurs :
+\item \Cpp propose quatre nouveaux opérateurs :
 
 \begin{itemize}
-\item \texttt{new} alloue une certaine quantité de mémoire et renvoie un pointeur sur le
-début du tableau :
+\item \inline{new} alloue une la quantité de mémoire nécessaie au type, et renvoie un pointeur sur la zone mémoire allouée.
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+double * ptr = new double;
+*ptr = 3.7;
+\end{minted}
+
+\item \inline{delete} libère l'espace mémoire.
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+delete ptr;
+// bien sûr, ne pas utiliser `ptr' après
+\end{minted}
+
+\item \inline{new[]} alloue la mémoire nécessaire pour un tableau de taille $n$ et renvoie un pointeur sur le début du tableau :
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 unsigned int n = 0;
 std::cin >> n;
 double * tableau = new double[n];
 \end{minted}
 
-\item \texttt{delete[]} libère l'espace mémoire :
+\item \inline{delete[]} libère l'espace mémoire d'un pointeur-tableau :
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 delete[] tableau;
 \end{minted}
@@ -570,6 +587,15 @@ int main()
 \end{cbox}
 \end{column}
 \end{columns}
+\end{frame}
+
+%--------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Allocation dynamique de mémoire}
+Ceci dit, en \Cpp moderne, la manipulation de pointeurs nus et l'allocation/libération manuelle de mémoire n'est \textbf{pas une bonne pratique}.\\
+
+On préfèrera l'utilisation d'objets encapsulant et effectant automatiquement ces opérations $\rightarrow$ bibliothèque standard.\\
+Et à défaut, on créera nos propres objets...
 \end{frame}
 
 %--------------------------------------------------------------------------------
@@ -862,7 +888,6 @@ int main()
 
 %----------------------------------------------------------------
 
-
 \begin{frame}{Compilation}
 \begin{prompt}
 g++ dummy.cpp test\_dummy.cpp -o test\_dummy.exe
@@ -871,6 +896,187 @@ g++ dummy.cpp test\_dummy.cpp -o test\_dummy.exe
 \begin{cbox}[][][\centering]
 \ding{42} Les fichiers d'en-tête ne sont jamais compilés !
 \end{cbox}
+\end{frame}
+
+%----------------------------------------------------------------
+
+\part{Objets constants}
+\frame{\partpage}
+
+%----------------------------------------------------------------
+
+\begin{frame}[fragile]{Objets constants}
+Le mot-clé \inline{const} interdit la modification de l'objet auquel il s'applique.
+\vspace{1em}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+const int i = 42;
+i = 3;  // erreur de compilation
+\end{minted}
+
+\vspace{1em}
+\pause
+
+Deux utilités :
+\begin{itemize}
+  \item Protège l'objet d'une modification (contrainte imposée à soi-même et aux autres utilisateurs du code)
+  \item Indique au compilateur qu'il peut effectuer des optimisations supplémentaires
+\end{itemize}
+
+\end{frame}
+
+%----------------------------------------------------------------
+
+\begin{frame}[fragile]{Pointeur constant ou pointeur sur constante ?}
+Petite subtilité :
+\begin{itemize}
+  \item \inline{char * const str;} est un \textit{pointeur constant} sur un objet de type \inline{char} mutable\\
+  $\Rightarrow$ \inline{str[0]='a'} est légal, mais \inline{str=NULL} est illégal.
+  \item \inline{const char * str;} est un pointeur (mutable) sur un objet de type \inline{const char}, ie. une constante\\
+  $\Rightarrow$ \inline{str[0]='a';} est illégal, mais \inline{str=NULL;} est légal.
+\end{itemize}
+\vspace{1em}
+\pause
+La question ne se pose pas pour les références, qui sont nécessairement constantes. Seule la forme \inline{const type&} a une utilité, pour empêcher l'objet référencé d'être modifié.
+\end{frame}
+
+%----------------------------------------------------------------
+
+\begin{frame}[fragile]{Rappel : passage par valeur, par référence}
+ \begin{columns}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Passage par valeur)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void f (int i) {
+  i = 10;
+  cout << "f : " << i << endl;
+}
+
+void main () {
+  int e = 0;
+  f(e);
+  cout << "main : " << e << endl;
+}
+\end{minted}
+
+\onslide<2>\tt
+\begin{cbox}
+f : 10\\
+main : 0
+\end{cbox}
+
+\onslide<all>
+\end{cbox}
+\end{column}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Passage par référence)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void g (int& i) {
+  i = 10;
+  cout << "g : " << i << endl;
+}
+
+void main () {
+  int e = 0;
+  g(e);
+  cout << "main : " << e << endl;
+}
+\end{minted}
+
+\onslide<2>\tt
+\begin{cbox}
+g : 10\\
+main : 10
+\end{cbox}
+\end{cbox}
+\end{column}
+\end{columns}
+\end{frame}
+
+%-------------------------------------
+
+\begin{frame}[fragile]{Passage d'objets par valeur, par référence constante}
+ \onslide<all>
+\begin{columns}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Passage par valeur)
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+double somme (BigData data) {
+  double s = 0;
+  for (...)
+    s += data[i];
+  return s;
+}
+
+BigData test ("un_fichier.csv");
+cout << somme(test) << endl;
+\end{minted}
+
+\onslide<2>
+\begin{cbox}[][][\centering]
+L'objet est \textbf{copié}\\(constructeur par copie appelé)
+\end{cbox}
+\vspace{0em}
+
+\onslide<all>
+\end{cbox}
+\end{column}
+\begin{column}{0.5\columnwidth}
+\begin{cbox}[][lwuc][\footnotesize](Passage par référence constante)
+\begin{minted}[linenos,firstnumber=1,fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+double somme (const BigData& data) {
+  double s = 0;
+  for (...)
+    s += data[i];
+  return s;
+}
+
+BigData test ("un_fichier.csv");
+cout << somme(test) << endl;
+\end{minted}
+\begin{tikzpicture}[remember picture,overlay]
+  \draw[codeblock=blue]
+  ([yshift=-0.75ex,xshift=17ex]minted-1) rectangle
+  ([yshift=+1.75ex,xshift=37ex]minted-1);
+\end{tikzpicture}
+\vspace{-1.6em}
+\onslide<2>
+\begin{cbox}[][][\centering]
+Une copie inutile est évitée, mais l'objet \textbf{reste protégé} d'éventuelles modification.
+\end{cbox}
+\end{cbox}
+\end{column}
+\end{columns}
+
+\vspace{1em}
+\pause
+$\rightarrow$ Utile pour les objets volumineux (tableaux, listes...). Parfois indispensable (objet non copiable).
+
+\end{frame}
+
+%-------------------------------
+
+\begin{frame}[fragile]{Copie en \Cpp}
+
+En \Cpp, le comportement par défaut lors d'un appel ou d'une assignation est la copie (profonde). C'est \structure{à vous} de choisir entre la \textit{copie}, le \textit{passage par référence constante} (pas de modifications), ou le \textit{passage par référence} simple (pour effectuer des modifications)\\
+
+\pause
+Différent de Python, où les objets composites ne sont pas copiés en profondeur :
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{python}
+def test (liste, nombre):
+  liste[2] = 0
+  nombre = 0
+
+liste = [1,2,3]
+nombre = 4
+somme(liste, nombre)
+print(liste, nombre)
+\end{minted}
+\onslide<3>
+\begin{cbox}
+\texttt{[1,2,0] 4}
+\end{cbox}
+
 \end{frame}
 
 

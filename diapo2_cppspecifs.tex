@@ -933,7 +933,7 @@ Petite subtilité :
   \item \inline{char * const str;} est un \textit{pointeur constant} sur un objet de type \inline{char} mutable\\
   $\Rightarrow$ \inline{str[0]='a'} est légal, mais \inline{str=NULL} est illégal.
   \item \inline{const char * str;} est un pointeur (mutable) sur un objet de type \inline{const char}, ie. une constante\\
-  $\Rightarrow$ \inline{str[0]='a';} est illégal, mais \inline{str=NULL;} est légal.
+  $\Rightarrow$ \inline{str[0]='a'} est illégal, mais \inline{str=NULL} est légal.
 \end{itemize}
 \vspace{1em}
 \pause

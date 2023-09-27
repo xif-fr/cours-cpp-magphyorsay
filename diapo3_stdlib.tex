@@ -109,7 +109,7 @@ std::vector<int> tableau3 = {4, 8, 1, -4, 5};
 
 Tout conteneur présentant des \emph{itérateurs} peuvent être parcourus avec une boucle similaire au \texttt{for x in ...} de Python :
 
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+\begin{minted}[samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 for (int x : tableau2) {
   cout << x << endl;
 }
@@ -117,7 +117,7 @@ for (int x : tableau2) {
 
 Si les éléments doivent être modifiés, il faut les prendre par référence :
 
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+\begin{minted}[samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 for (int& x : tableau2) {
   x += 2;
 }
@@ -178,7 +178,7 @@ std::sort(tableau3.begin(), tableau3.end());
 
 Exemple de remplissage d'un tableau de points à partir d'un fichier de points (fichier deux colonnes \texttt{x} et \texttt{y})
   
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+\begin{minted}[samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
   struct point {
     double x, y;
   };
@@ -390,6 +390,74 @@ $\rightarrow$ "\texttt{Position at t=1.2e+3 : (x=0.78,y=0.92)}".\\
 
 \end{frame}
 
-%------------------------------
+%---------------------------------------------
+
+\begin{frame}[fragile]{Tuples}
+
+Pour retourner plusieurs valeurs d'une fonction, on a vu le passage par référence/pointeur :
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+void ma_fonction (int a, float b, bool& ret1, float& ret2) {
+  ...
+  ret1 = true; ret2 = 3.14;
+}
+
+bool r1; float r2;
+ma_fonction(42, 1.41, r1, r2);
+\end{minted}
+\vspace{0.5em}
+\pause
+
+On peut aussi faire comme en Python en retournant un \textbf{tuple} :
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+#include <tuple>
+
+std::tuple<bool,float> ma_fonction (int a, float b) {
+  ...
+  return {true, 3.14};
+}
+
+auto [r1, r2] = ma_fonction(42, 1.41);
+\end{minted}
+
+\end{frame}
+
+%---------------
+
+\begin{frame}[fragile]{Tuples}
+
+Le type \inline{std::tuple<>} prend en argument template la liste des types composant le tuple. La taille et le type d'un tuple n'est pas dynamique.\\
+
+Outre le dépaquetage avec \inline{auto [...] = ...}, on peut accéder à un élement du tuple par son numéro :
+\begin{minted}[samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+std::tuple<bool,float> tup = {true, 3.14};
+cout << std::get<1>(tup) << endl; // affiches 3.14
+\end{minted}
+
+\end{frame}
+
+%---------------
+
+\begin{frame}[fragile]{Tuples}
+
+Néanmoins, il est souvent plus clair et explicite de retourner des structures :
+\begin{minted}[samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+struct segment_t { bool ok; point_t orig; vec_t vecteur; }
+
+segment_t ma_fonction (...) {
+  ...
+  return { true, {1.,2.}, {3.,4.} };
+}
+
+segment_t res = ma_fonction(...);
+if (res.ok) {
+  ...
+\end{minted}
+
+Dans ce cas, la déclaration-assignation en une seule ligne fonctionne encore :
+\begin{minted}[samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+auto [ok, orig, vec] = ma_fonction(...);
+\end{minted}
+
+\end{frame}
 
 \end{document}

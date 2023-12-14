@@ -23,8 +23,7 @@
 
 \begin{frame}[fragile]{Introduction}
 \begin{itemize}
-\item L'héritage permet de faire intéragir les classes entre elles par
-le biais de \structure{relations dites hiérarchiques}
+\item L'héritage est une relation hiérarchique entre classes. C'est un mécanisme permettant de construire une classe à partir d'une autre classe existante.
 \end{itemize}
 
 \begin{center}
@@ -46,7 +45,7 @@ le biais de \structure{relations dites hiérarchiques}
 
 %------------------------------------------------------------------------
 
-\begin{frame}[fragile]{Introduction}
+\begin{frame}[fragile]{Une classe \texttt{B} héritant d'une classe \texttt{A}}
  \begin{center}
   \begin{tikzpicture}[
       grow=down,
@@ -64,10 +63,8 @@ le biais de \structure{relations dites hiérarchiques}
 \end{center}
 
 \begin{itemize}
-%\item Une classe \texttt{B} qui hérite d'une classe \texttt{A} a accès aux membres publics et protégés
- % de \texttt{A}
-\item Une classe \texttt{B} hérite d'une classe \texttt{A} : les méthodes et fonctions
-amies de \texttt{B} ont accès aux membres publics et protégés de \texttt{A}
+\item La classe \texttt{B} hérite de tous les membres (attributs et méthodes) de la classe \texttt{A}
+\item Les méthodes (et fonctions amies) de \texttt{B} ont accès aux membres publics et protégés de \texttt{A}
 \end{itemize}
 
 \pause
@@ -90,27 +87,23 @@ spécialisation} de \texttt{A}.
 %------------------------------------------------------------------------
 
 \begin{frame}[fragile]{Définition : héritage simple/multiple, composition}
- On distingue les deux liens logiques que sont l'héritage et la
-composition:
+On distingue les deux liens logiques que sont l'héritage et la composition:
 
 \begin{description}
 \item[{Composition}] relation de type \structure{\textbf{a un (verbe avoir)}}; la classe \texttt{Polygone} a
 un ensemble d'objets de type \texttt{point}, 
-\item[{Héritage}] relation de type \structure{\textbf{est un (verbe être)}}; un \texttt{Rectangle} est un
-\texttt{Polygone}, une \texttt{voiture} est un \texttt{véhicule} 
+\item[{Héritage\footnote{On devrait parler de \textbf{sous-typage}; l'héritage n'étant qu'une façon de faire du sous-typage.}}] relation de type \structure{\textbf{est un (verbe être)}}; un \texttt{Rectangle} est un
+\texttt{Polygone}, une \texttt{Voiture} est un \texttt{Véhicule}.
 \end{description}
 
 \bigskip
 
 \begin{description}
-\item[{Héritage simple}] une classe n'hérite que d'une seule classe, 
-\item[{Héritage multiple}] une classe hérite de plus d'une classe (plus délicat à mettre en oeuvre) 
+\item[{Héritage simple}] : une classe n'hérite que d'une seule classe, 
+\item[{Héritage multiple}] : une classe hérite de plus d'une classe (plus délicat à mettre en oeuvre) 
 \end{description}
 
 \end{frame}
-
-
-
 
 %----------------------------------------------------------------------
 
@@ -714,5 +707,42 @@ int main()
 \end{frame}
 
 %-------------------------------------------------------------
+
+\begin{frame}{Utilisations de l'héritage}
+\begin{itemize}
+
+\item Extension (ajout de fonctionnalités...) d'une classe existante, même tierce.
+
+\item Structuration : Découpage d'un programme en sous-programmes, en composants non-indépendants $\to$~découplage de concepts distincts, évolutivité, modularité $\to$ TD 4
+
+\item Sous-typage et création d'une famille d'objets (relation de type \structure{\textbf{est un}}). Utile pour des systèmes de simulation, pour la représentations d'objets physiques ou logiciels (interfaces utilisateurs...). Polymorphisme. $\to$ TD 5
+
+\item Spécifications d'interfaces, d'APIs (classes virtuelles pures)
+
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------
+
+\begin{frame}[fragile]{Et dans d'autres langages ?}
+L'héritage diffère notablement entre les langages orientés objets.\\
+
+En Python :
+\begin{minted}[fontsize=\footnotesize,xrightmargin=0.5cm,xleftmargin=0.5cm]{python}
+class Polygone:
+
+  def affiche(self):
+    # ...
+
+class Rectange (Polygone):
+
+  def __init__(self):
+    super.__init__()
+
+  def affiche(self):
+    Polygon.affiche()
+    # ...
+\end{minted}
+\end{frame}
 
 \end{document}

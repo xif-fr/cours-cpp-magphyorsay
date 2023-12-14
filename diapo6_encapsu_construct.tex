@@ -13,11 +13,191 @@
 
 \maketitle
 
-\begin{frame}[fragile]{Pré-requis}
-\begin{center}
-\includegraphics[width=0.65\paperwidth]{aspirine.jpg}
-\end{center}
+% \begin{frame}[fragile]{Pré-requis}
+% \begin{center}
+% \includegraphics[width=0.65\paperwidth]{aspirine.jpg}
+% \end{center}
+% \end{frame}
+
+%--------------------------------------------------
+
+\part{Encapsulation}
+\frame{\partpage}
+
+%-----------------------------------------------
+
+\section{Encapsulation}
+
+\begin{frame}[fragile]{Encapsulation : définition}
+Encapsulation = interdire/cacher l'accès de certains attributs d'une classe à tout code extérieur à la classe
+
+\begin{itemize}
+\item il n'est plus possible d'agir \structure{directement} sur les données d'un objet
+
+\item la modification des attributs de l'objet se fait par \structure{l'intermédiaire de méthodes associées}
+
+\item la classe \structure{prend responsabilité} des attributs protégés
+\end{itemize}
+
+\structure{Syntaxe :} les mots clés sont \inline{private}, \inline{protected} et \inline{public}
 \end{frame}
+
+\begin{frame}[fragile]{Exemple}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Particule {
+private: // facultatif : private par défaut
+  // Déclaration des attributs
+  double masse_MeV;
+  int charge_u;
+  ...
+};
+\end{minted}
+\pause
+\vspace{1em}
+\structure{Conséquence :}
+\vspace{1em}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+Particule my_kaonplus;
+my_kaonplus.masse_MeV = 493.678; // erreur de compilation
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Exemple complet (1/2)}
+ \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Particule {
+private:
+  // Déclaration des attributs
+  double masse_MeV;
+  int charge_u;
+
+public:
+  // Déclaration des méthodes d'accès
+  double get_masse_MeV() const;
+  double get_masse_kg() const;
+  void set_masse(double masse_MeV_);
+
+  int get_charge_u() const;
+  double get_charge_C() const;
+  void set_charge(int charge_u_);
+};
+\end{minted}
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}[fragile]{Exemple complet (2/2)}
+
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+// Définition des méthodes
+double Particule::get_masse_MeV() const {
+  return masse_MeV;
+}
+
+void Particule::set_masse(double masse_MeV_) {
+  if (masse_MeV_ < 0)
+    throw std::range_error("Masse de particule négative !");
+  masse_MeV = masse_MeV_;
+}
+
+void Particule::set_charge(int charge_u_) {
+  if (charge_u_ > 1 or charge_u_ < -1)
+    throw std::range_error("Charge de particule doit être -1, 0, ou 1");
+  charge_u = charge_u_;
+}
+...
+\end{minted}
+\pause
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+Particule my_kaonplus;
+my_kaonplus.set_charge(+1);
+double masse = my_kaonplus.get_masse_MeV();
+\end{minted}
+
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}[fragile]{Attributs privés}
+\emph{Seules les méthodes} de la classe ont accès aux attributs \inline{private}/\inline{protected}\footnote{Les méthodes des classes filles pourront aussi y accéder si \inline{protected}, et ne pourront pas si \inline{private}. Il n'y a pas forcément raison d'avoir confiance envers les classes filles.} (à l'exception des fonctions amies).
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}[fragile]{Exemple (incomplet) : \texttt{Matrice}}
+
+Il faut interdire l'accès de \texttt{data} à l'utilisateur.
+\vspace{1em}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+class Matrice {
+public:
+  ...
+  double& operator[](int row, int col);  // Accès à un élément de la matrice
+
+private:
+  double* data;
+  unsigned int cols, rows;
+};
+\end{minted}
+\pause
+\vspace{1em}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+double& Matrice::operator[](int row, int col) {
+  if (row < 0 or row >= rows or col < 0 or col >= cols)
+    throw std::out_of_range();
+  return data[ row*cols + col ]; // renvoie une référence
+}
+\end{minted}
+\pause
+\vspace{1em}
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+mat1.accès[1, 2] = 4.2;  // modification via référence
+\end{minted}
+
+\end{frame}
+
+%---------------------------------------------------------------------
+
+\begin{frame}[fragile]{Intérêts de l'encapsulation}
+\begin{itemize}
+\item Lors de la programmation et surtout de la réutilisation d'un objet dans un
+autre programme, l'encapsulation empêche la modification non voulue des données
+membres
+
+\item L'objet, vu de l'extérieur, \structure{n'est caractérisé que par son \emph{interface}\footnote{c'est à dire l'ensemble des attributs et méthodes effectivement utiles pour l'utilisateur}}\pause :
+
+\begin{enumerate}[<+->]
+\item pas d'ambiguïté pour l'utilisateur (\textit{ait-je le droit de modifier cet attribut ?} \textit{est-ce que faire ceci peut faire planter le programme ?}); plus simple; moins d'erreurs
+\item la maintenance et l'amélioration de l'objet sont grandement facilitées; tant que la finalité des méthodes et attributs de l'interface publique ne change pas, on peut modifier les rouages sans perturber pour autant les utilisateurs de la classe
+\item la classe est facilement réutilisable (cf. héritage)
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+%----------------------------------------------------
+
+\begin{frame}[fragile]{Intérêts de l'encapsulation}
+
+N'ayez pas confiance en l'utilisateur de la classe, même si c'est vous !\\
+
+Règle assez générale :
+\begin{itemize}[<+->]
+\item \inline{private} si l'attribut doit être protégé
+\item Si on envisage qu'un attribut puisse être contraint dans le futur\footnote{en particulier dans une classe fille, cf. cours sur l'héritage} $\rightarrow$ \inline{private}/\inline{protected}
+\item Sinon, on \emph{peut} laisser \inline{public}, en particulier si cela évite une lourdeur syntaxique (setters \& getters, ex. : \texttt{vec3}, \texttt{point}...)
+\item Dans le doute, préférer \inline{private}/\inline{protected}
+\end{itemize}
+
+\end{frame}
+
+%-----------------------------------------------------
+
+\begin{frame}[fragile]{Méthodes privées}
+Comme les attributs, on peut déclarer des \structure{méthodes privées} derrière un \inline{private:} ou \inline{protected:}. Comme les attributs privés, elles ne sont accessibles que par les autres méthodes de la classe\footnote{et éventullement celles des classes fille si \inline{protected}}. Alors que les méthodes derrière un \inline{public:} sont accessibles partout.\\
+
+Quelle utilité ? Par exemple, effectuer des opérations internes à la classe qui ne concernent pas l'utilisateur final.
+\end{frame}
+
+%-----------------------------------------------------
 
 \part{Constructeurs et destructeurs}
 \frame{\partpage}
@@ -67,7 +247,7 @@ public:
   // Constructeur sans arguments (par défaut) : matrice vide
   Matrice();
 
-  // Surdéfinition de constructeur : matrice de cols ⨉ rows
+  // Surdéfinition de constructeur : matrice de cols x rows
   Matrice(unsigned int cols, unsigned int rows, double valdef=0.);
 
 private:
@@ -369,161 +549,6 @@ Matrice @0x56078abcc330 détruite.
       Matrice (const Matrice&) = delete;
     \end{minted}
   \end{itemize}
-\end{frame}
-
-%-----------------------------------------------
-
-\section{Encapsulation}
-
-\begin{frame}[fragile]{Encapsulation : définition}
-Encapsulation = interdire/cacher l'accès de certains attributs d'une classe à tout code extérieur à la classe
-
-\begin{itemize}
-\item il n'est plus possible d'agir \structure{directement} sur les données d'un objet
-
-\item la modification des attributs de l'objet se fait par \structure{l'intermédiaire de méthodes associées}
-\end{itemize}
-
-\structure{Syntaxe :} les mots clés sont \inline{private}, \inline{protected} et \inline{public}
-\end{frame}
-
-\begin{frame}[fragile]{Exemple}
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-class Particule {
-private: // facultatif : private par défaut
-  // Déclaration des attributs
-  double masse_MeV;
-  int charge_u;
-  ...
-};
-\end{minted}
-\pause
-\vspace{1em}
-\structure{Conséquence :}
-\vspace{1em}
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-Particule my_kaonplus;
-my_kaonplus.masse_MeV = 493.678; // erreur de compilation
-\end{minted}
-\end{frame}
-
-\begin{frame}[fragile]{Exemple complet (1/2)}
- \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-class Particule {
-private:
-  // Déclaration des attributs
-  double masse_MeV;
-  int charge_u;
-
-public:
-  // Déclaration des méthodes d'accès
-  double get_masse_MeV() const;
-  double get_masse_kg() const;
-  void set_masse(double masse_MeV_);
-
-  int get_charge_u() const;
-  double get_charge_C() const;
-  void set_charge(int charge_u_);
-};
-\end{minted}
-\end{frame}
-
-%-----------------------------------------------------------------------
-
-\begin{frame}[fragile]{Exemple complet (2/2)}
-
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-// Définition des méthodes
-double Particule::get_masse_MeV() const {
-  return masse_MeV;
-}
-
-void Particule::set_masse(double masse_MeV_) {
-  if (masse_MeV_ > 0)
-    throw std::range_error("Masse de particule négative !");
-  masse_MeV = masse_MeV_;
-}
-
-void Particule::set_charge(int charge_u_) {
-  if (charge_u_ > 1 or charge_u_ < -1)
-    throw std::range_error("Charge de particule doit être -1, 0, ou 1");
-  charge_u = charge_u_;
-}
-...
-\end{minted}
-\pause
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-Particule my_kaonplus;
-my_kaonplus.set_charge(+1);
-double masse = my_kaonplus.get_masse_MeV();
-\end{minted}
-
-\end{frame}
-
-%----------------------------------------------------------------------
-
-\begin{frame}[fragile]{Exemple (incomplet) : \texttt{Matrice}}
-
-Il faut interdire l'accès de \texttt{data} à l'utilisateur.
-\vspace{1em}
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-class Matrice {
-public:
-  ...
-  double& operator[](int row, int col);  // Accès à un élément de la matrice
-
-private:
-  double* data;
-  unsigned int cols, rows;
-};
-\end{minted}
-\pause
-\vspace{1em}
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-double& Matrice::operator[](int row, int col) {
-  if (row < 0 or row >= rows or col < 0 or col >= cols)
-    throw std::out_of_range();
-  return data[ row*cols + col ]; // renvoie une référence
-}
-\end{minted}
-\pause
-\vspace{1em}
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-mat1.accès[1, 2] = 4.2;  // modification via référence
-\end{minted}
-
-\end{frame}
-
-%---------------------------------------------------------------------
-
-\begin{frame}[fragile]{Intérêts de l'encapsulation}
-\begin{itemize}
-\item Lors de la programmation et surtout de la réutilisation d'un objet dans un
-autre programme, l'encapsulation empêche la modification non voulue des données
-membres
-
-\item L'objet, vu de l'extérieur, \structure{n'est caractérisé que par son \emph{interface}\footnote{c'est à dire l'ensemble des attributs et méthodes effectivement utiles pour l'utilisateur}}\pause :
-
-\begin{enumerate}[<+->]
-\item pas d'ambiguïté pour l'utilisateur (\textit{ait-je le droit de modifier cet attribut ?} \textit{est-ce que faire ceci peut faire planter le programme ?}); plus simple; moins d'erreurs
-\item la maintenance et l'amélioration de l'objet sont grandement facilitées; tant que la finalité des méthodes et attributs de l'interface publique ne change pas, on peut modifier les rouages sans perturber pour autant les utilisateurs de la classe
-\item la classe est facilement réutilisable (cf. héritage)
-\end{enumerate}
-\end{itemize}
-\end{frame}
-
-%----------------------------------------------------
-
-\begin{frame}[fragile]{Intérêts de l'encapsulation}
-
-Règle assez générale :
-\begin{itemize}[<+->]
-\item \inline{private} si l'attribut doit être protégé
-\item Si on envisage qu'un attribut puisse être contraint dans le futur\footnote{en particulier dans une classe fille, cf. cours sur l'héritage} $\rightarrow$ \inline{private}/\inline{protected}
-\item Sinon, on \emph{peut} laisser \inline{public}, en particulier si cela évite une lourdeur syntaxique (setters \& getters, ex. : \texttt{vec3}, \texttt{point}...)
-\item Dans le doute, préférer \inline{private}/\inline{protected}
-\end{itemize}
-
 \end{frame}
 
 %--------------------------------------------------

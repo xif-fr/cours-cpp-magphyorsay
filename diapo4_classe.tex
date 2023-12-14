@@ -175,17 +175,17 @@ données}}, et des \structure{\emph{actions}} sur ces structures
 
 %------------------------------------------------------------------
 
-\begin{frame}[fragile]{Déclaration de classe}
+\begin{frame}[fragile]{Déclaration de classe : attributs}
 
 \begin{itemize}
-\item Classe \structure{\(\rightarrow\) généralisation de la notion de type}
+\item Classe \(\rightarrow\) généralisation de la notion de type :\\ \textbf{collection de variables}
 \begin{cbox}[][lwuc](\texttt{particule.h})
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 
 class Particule {
 public:  // visibilité des membres (cf. cours encapsulation)
 
-  // Déclaration de données membres
+  // Déclaration des attributs = données membres
   double masse; // kg
   double charge; // C
   vec3 impulsion; // kg·m/s
@@ -204,21 +204,40 @@ public:  // visibilité des membres (cf. cours encapsulation)
 
 %--------------------------------------------------------------
 
-\begin{frame}[fragile]{Déclaration de classe}
+\begin{frame}[fragile]{Instance de classe}
+
+Une fois que l'on a déclaré la classe ($\equiv$ le type), on peut créer une variable de ce type :
+\begin{minted}[samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+Particule my_electron;  // <- instance de la classe Particule
+\end{minted}
+En mémoire, \inline{my_electron} est simplement une collection \{\inline{double},\inline{double},\inline{vec3}\}. On appelle ça une \emph{instance}, ou un \emph{objet}.\\\ \\
+\pause
+Accès aux membres :
+\begin{minted}[samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+cout << my_electron.charge;
+
+my_electron.masse = 9.109e-31;
+\end{minted}
+
+\end{frame}
+
+%--------------------------------------------------------------
+
+\begin{frame}[fragile]{Déclaration de classe : méthodes}
 
 \begin{itemize}
-\item Classe \structure{\(\rightarrow\) association de données membres et de méthodes (fonctions membres)}
+\item Classe \(\rightarrow\) association d'attributs et de méthodes (fonctions membres)
 \begin{cbox}[][lwuc](\texttt{particule.h})
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 class Particule {
 public:
 
-  // Déclaration de données membres
+  // Déclaration des attributs = données membres
   double masse; // kg
   double charge; // C
   vec3 impulsion; // kg·m/s
 
-  // Déclaration des méthodes
+  // Déclaration des méthodes = fonctions membres
   void initialise(double masse_MeV, int charge_u, vec3 impulsion_SI);
   void afficher();
   double masse_en_MeV();
@@ -232,37 +251,23 @@ public:
 
 %-------------------------------------------
 
-\begin{frame}[fragile]{Déclaration de classe}
+\begin{frame}[fragile]{Méthodes}
 
-\begin{itemize}
-\item Classe \structure{\(\rightarrow\) association de données membres et de méthodes}
-\begin{cbox}[][lwuc](\texttt{particule.h})
-\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
-#ifndef PARTICULE_H
-#define PARTICULE_H    
-class Particule {
-public:
+Méthode = fonction \structure{qui agit sur une instance} :\\
 
-  // Déclaration de données membres
-  double masse; // kg
-  double charge; // C
-  vec3 impulsion; // kg·m/s
+\begin{minted}[samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
+my_electron.initialise(...);  // agit sur my_electron
 
-  // Déclaration des méthodes
-  void initialise(double masse_MeV, int charge_u, vec3 impulsion_SI);
-  void afficher();
-  double masse_en_MeV();
-  double énergie_en_MeV();
-};
-#endif
+my_proton.initialise(...);  // agit sur my_proton
 \end{minted}
-\end{cbox}
-\end{itemize}
+\vspace{1em}
+\pause
+Ça n'est pas une fonction globale !
 
 \end{frame}
 
 %-------------------------------------------
- 
+
 \begin{frame}[fragile]{Définition de méthodes de classes}
 
 \begin{itemize}
@@ -286,6 +291,99 @@ void Particule::afficher() {
 double Particule::énergie_en_MeV() { // E² = m²c⁴ + p²c²
   c2 = c * c;
   return sqrt( pow(masse*c2, 2) + impulsion.norme_carrée()*c2 ) / J_per_MeV;
+}
+\end{minted}
+\end{cbox}
+\end{itemize}
+
+\end{frame}
+
+%----------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Définition de méthodes de classes}
+
+\begin{itemize}
+\item Implicitement :\\\ \\
+\begin{cbox}[][lwuc](\texttt{particule.cpp})
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=-1.5cm,escapeinside=||]{c++}
+#include <iostream>
+#include "particule.h"
+
+void Particule::initialise(double masse_MeV, int charge_u, vec3 impulsion_SI) {
+  |\textbf{INSTANCE}|.masse = masse_MeV * J_per_MeV / (c*c);
+  |\textbf{INSTANCE}|.charge = charge_u * unit_charge;
+  |\textbf{INSTANCE}|.impulsion = impulsion_SI;
+}
+
+void Particule::afficher() {
+  std::cout << "m=" << |\textbf{INSTANCE}|.masse_en_MeV() << " MeV/c², q=" << |\textbf{INSTANCE}|.charge/unit_charge << ...
+}
+
+double Particule::énergie_en_MeV() { // E² = m²c⁴ + p²c²
+  c2 = c * c;
+  return sqrt( pow(|\textbf{INSTANCE}|.masse*c2, 2) + |\textbf{INSTANCE}|.impulsion.norme_carrée()*c2 ) / J_per_MeV;
+}
+\end{minted}
+\end{cbox}
+\end{itemize}
+
+\end{frame}
+
+%----------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Définition de méthodes de classes}
+
+\begin{itemize}
+\item Implicitement, en d'autres termes :\\\ \\
+\begin{cbox}[][lwuc](\texttt{particule.cpp})
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=-1.5cm,escapeinside=||]{c++}
+#include <iostream>
+#include "particule.h"
+
+void Particule::initialise(double masse_MeV, int charge_u, vec3 impulsion_SI) {
+  |\textbf{MOI}|.masse = masse_MeV * J_per_MeV / (c*c);
+  |\textbf{MOI}|.charge = charge_u * unit_charge;
+  |\textbf{MOI}|.impulsion = impulsion_SI;
+}
+
+void Particule::afficher() {
+  std::cout << "m=" << |\textbf{MOI}|.masse_en_MeV() << " MeV/c², q=" << |\textbf{MOI}|.charge/unit_charge << ...
+}
+
+double Particule::énergie_en_MeV() { // E² = m²c⁴ + p²c²
+  c2 = c * c;
+  return sqrt( pow(|\textbf{MOI}|.masse*c2, 2) + |\textbf{MOI}|.impulsion.norme_carrée()*c2 ) / J_per_MeV;
+}
+\end{minted}
+\end{cbox}
+\end{itemize}
+
+\end{frame}
+
+%----------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Définition de méthodes de classes}
+
+\begin{itemize}
+\item Implicitement, en vrai \Cpp :\\\ \\
+\begin{cbox}[][lwuc](\texttt{particule.cpp})
+\begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=-1.5cm]{c++}
+#include <iostream>
+#include "particule.h"
+
+void Particule::initialise(double masse_MeV, int charge_u, vec3 impulsion_SI) {
+  this->masse = masse_MeV * J_per_MeV / (c*c);
+  this->charge = charge_u * unit_charge;
+  this->impulsion = impulsion_SI;
+}
+
+void Particule::afficher() {
+  std::cout << "m=" << this->masse_en_MeV() << " MeV/c², q=" << this->charge/unit_charge << ...
+}
+
+double Particule::énergie_en_MeV() { // E² = m²c⁴ + p²c²
+  c2 = c * c;
+  return sqrt( pow(this->masse*c2, 2) + this->impulsion.norme_carrée()*c2 ) / J_per_MeV;
 }
 \end{minted}
 \end{cbox}

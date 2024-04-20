@@ -410,14 +410,14 @@ mémoire nécessaire à l'allocation (statique).
 %-----------------------------------------------------------------------------------------
 
 \begin{frame}[fragile]{Utilisation des opérateurs \texttt{new} et \texttt{delete}}
- \begin{itemize}
+\begin{itemize}
 \item Pour rappel, en langage C, la gestion dynamique de mémoire fait appel aux
 fonctions \texttt{malloc} et \texttt{free} (\texttt{stdlib.h})
 
-\item \Cpp propose quatre nouveaux opérateurs :
+\item \Cpp introduit quatre nouveaux opérateurs :
 
 \begin{itemize}
-\item \inline{new} alloue une la quantité de mémoire nécessaie au type, et renvoie un pointeur sur la zone mémoire allouée.
+\item \inline{new} alloue la quantité de mémoire nécessaire au type, et renvoie un pointeur sur la zone mémoire allouée.
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
 double * ptr = new double;
 *ptr = 3.7;
@@ -428,6 +428,8 @@ double * ptr = new double;
 delete ptr;
 // bien sûr, ne pas utiliser `ptr' après
 \end{minted}
+
+\pause
 
 \item \inline{new[]} alloue la mémoire nécessaire pour un tableau de taille $n$ et renvoie un pointeur sur le début du tableau :
 \begin{minted}[fontsize=\footnotesize,samepage,mathescape,xrightmargin=0.5cm,xleftmargin=0.5cm]{c++}
@@ -441,6 +443,28 @@ double * tableau = new double[n];
 delete[] tableau;
 \end{minted}
 \end{itemize}
+\end{itemize}
+\end{frame}
+
+%-----------------------------------------------------------------------------------------
+
+\begin{frame}[fragile]{Utilisation des opérateurs \texttt{new} et \texttt{delete}}
+\begin{itemize}
+\item \Cpp introduit quatre nouveaux opérateurs :
+
+\begin{itemize}
+\item \inline{new} alloue une la quantité de mémoire nécessaie au type
+
+\item \inline{delete} libère l'espace mémoire... \textbf{mais pas que !}
+
+\item \inline{new[]} alloue la mémoire nécessaire pour un tableau de taille $n$
+
+\item \inline{delete[]} libère l'espace mémoire d'un pointeur-tableau... \textbf{mais pas que !}
+\end{itemize}
+
+\item \inline{delete} et \inline{delete[]} appellent aussi les \emph{destructeurs} associés au type $\to$ cf.~cours sur les constructeurs/destructeurs. Il faut utiliser \inline{new} et \inline{delete} en \Cpp.
+
+\item Ne surtout pas mélanger avec \texttt{malloc} et \texttt{free} !
 \end{itemize}
 \end{frame}
 
@@ -594,8 +618,9 @@ int main()
 \begin{frame}[fragile]{Allocation dynamique de mémoire}
 Ceci dit, en \Cpp moderne, la manipulation de pointeurs nus et l'allocation/libération manuelle de mémoire n'est \textbf{pas une bonne pratique}.\\
 
-On préfèrera l'utilisation d'objets encapsulant et effectant automatiquement ces opérations $\rightarrow$ bibliothèque standard.\\
-Et à défaut, on créera nos propres objets...
+On préfèrera l'utilisation d'objets encapsulant et effectant automatiquement ces opérations $\rightarrow$ bibliothèque standard (\inline{std::vector}, \inline{std::string}...).\\
+
+Et à défaut, on créera nos propres objets pour encapsuler ces opérations. 
 \end{frame}
 
 %--------------------------------------------------------------------------------
